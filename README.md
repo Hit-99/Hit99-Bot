@@ -3,10 +3,10 @@
 Features: 
 - Get premier rating (!rating)
 - Auto roles on join
-
-To Do:
 - Server logging
 - Reaction roles
+
+To Do:
 - Persistant roles (database)
 - Basic moderation
 - Channel purging

@@ -11,6 +11,8 @@ import (
 
 func autorole(event *events.GuildMemberJoin) {
 	fmt.Println("user joined")
-	memberID := snowflake.MustParse("1474078482417119356")
-	err = client.Rest.AddMemberRole(event.GuildID, event.Member.User.ID, memberID)
+	memberRoleID := snowflake.MustParse("1474078482417119356")
+	err = client.Rest.AddMemberRole(event.GuildID, event.Member.User.ID, memberRoleID)
 }
+
+// give member role if user doesnt have it

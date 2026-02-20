@@ -39,6 +39,12 @@ func main() {
 		bot.WithEventListenerFunc(onready),
 		bot.WithEventListenerFunc(commands),
 		bot.WithEventListenerFunc(autorole),
+		bot.WithEventListenerFunc(updateReactionRoles),
+		bot.WithEventListenerFunc(userJoinEvent),
+		// bot.WithEventListenerFunc(userLeaveEvent),
+		bot.WithEventListenerFunc(userMsgSendEvent),
+		// bot.WithEventListenerFunc(userMsgDelEvent),
+		bot.WithEventListenerFunc(userMsgEditEvent),
 	)
 
 	if err != nil {
@@ -69,7 +75,8 @@ func onready(event *events.Ready) {
 		fmt.Printf("error while creating message: %s\n", err)
 	}
 
-	fmt.Println("bot ready")
+	fmt.Println("the api works!!!")
 
 	initCommands()
+	initReactionRoles()
 }
