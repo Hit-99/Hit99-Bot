@@ -38,6 +38,7 @@ func main() {
 		),
 		bot.WithEventListenerFunc(onready),
 		bot.WithEventListenerFunc(commands),
+		bot.WithEventListenerFunc(autorole),
 	)
 
 	if err != nil {

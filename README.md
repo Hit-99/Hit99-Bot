@@ -2,10 +2,10 @@
 
 Features: 
 - Get premier rating (!rating)
+- Auto roles on join
 
 To Do:
 - Server logging
-- Auto roles on join
 - Reaction roles
 - Persistant roles (database)
 - Basic moderation
@@ -15,3 +15,4 @@ To Do:
 - Event tracking (esports)
 - Report command
 - PUG server elo
+- Steam account link verification

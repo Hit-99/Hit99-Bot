@@ -30,6 +30,20 @@ var Commands = []Command{
 		Name:    "link",
 		Handler: linkRatingHandler, //get rating, get user object, assign role
 	},
+	{
+		Name:    "getroles",
+		Handler: getallroleshandler, //get rating, get user object, assign role
+	},
+}
+
+func getallroleshandler(caller *fluxer.User, message *fluxer.Message, args []string) error {
+
+	roles, _ := client.Rest.GetRoles(*message.GuildID)
+	for _, role := range roles {
+		fmt.Printf("Role: %s, ID: %s\n", role.Name, role.ID)
+
+	}
+	return nil
 }
 
 func initCommands() {
