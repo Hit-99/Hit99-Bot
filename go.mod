@@ -18,6 +18,9 @@ require (
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/dennwc/iters v1.2.2 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
+	github.com/disgoorg/disgo v0.19.2 // indirect
+	github.com/disgoorg/godave v0.0.0-20260211222359-4ef3e359a3af // indirect
+	github.com/disgoorg/json/v2 v2.0.0 // indirect
 	github.com/disgoorg/omit v1.0.0 // indirect
 	github.com/disgoorg/snowflake/v2 v2.0.3 // indirect
 	github.com/frostbyte73/core v0.1.1 // indirect

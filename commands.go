@@ -32,7 +32,15 @@ var Commands = []Command{
 	},
 	{
 		Name:    "getroles",
-		Handler: getallroleshandler, //get rating, get user object, assign role
+		Handler: getallroleshandler,
+	},
+	{
+		Name:    "webhooktest",
+		Handler: webhooktesthandler,
+	},
+	{
+		Name:    "stats",
+		Handler: getStatsHandler, //get basic stats, return to user
 	},
 }
 

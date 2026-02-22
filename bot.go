@@ -79,4 +79,5 @@ func onready(event *events.Ready) {
 
 	initCommands()
 	initReactionRoles()
+	initDiscord()
 }

@@ -8,6 +8,8 @@ import (
 	"github.com/fluxergo/fluxergo/events"
 )
 
+// region role reaction message manager
+
 var roleChannel snowflake.ID
 var reactionMsgID snowflake.ID
 
@@ -72,6 +74,9 @@ func containsEmoji(emojiSlice map[string]string, emojiName string) bool {
 
 func updateReactionRoles(event *events.MessageReactionAdd) {
 
+	fmt.Println(event.Emoji.String())
+	fmt.Println(event.Emoji.Name)
+
 	if event.UserID == client.ID() {
 		return
 	}
@@ -81,15 +86,16 @@ func updateReactionRoles(event *events.MessageReactionAdd) {
 	}
 	if !containsEmoji(RoleReactionIDs, event.Emoji.Name) {
 		client.Rest.RemoveUserReaction(roleChannel, reactionMsgID, event.Emoji.Name, event.Member.User.ID)
+		return
+
 	}
 
 	toggleRoleForUser(event.Member.User.ID, snowflake.MustParse(RoleReactionIDs[event.Emoji.Name]), *event.GuildID)
+	client.Rest.RemoveUserReaction(roleChannel, reactionMsgID, event.Emoji.Name, event.Member.User.ID)
 	if err != nil {
 		fmt.Println("error adding role to user:", err)
 		return
 	}
-
-	client.Rest.RemoveUserReaction(roleChannel, reactionMsgID, event.Emoji.Name, event.Member.User.ID)
 
 }
 

@@ -15,16 +15,8 @@ func init() {
 	logChannelID = snowflake.MustParse(os.Getenv("LOG_CHANNEL_ID"))
 }
 
-// MAKE THESE EMBEDS
-
-// log all events to a file and/or channel
-
-/*
-joins
-leaves
-messages
-replies
-*/
+// log all messages and replies to file
+// log other events to log channel (joins, leaves, edits)
 
 // User Join Log Event			(add numbering system)
 func userJoinEvent(join *events.GuildMemberJoin) {
@@ -45,7 +37,7 @@ func userMsgSendEvent(msgSend *events.GuildMessageCreate) {
 	if msgSend.Message.Author.ID == client.ID() {
 		return
 	} else {
-		fmt.Printf("%s sent %s", msgSend.Message.Author.Username, msgSend.Message.Content)
+		fmt.Printf("%s sent %s \n", msgSend.Message.Author.Username, msgSend.Message.Content)
 	}
 }
 

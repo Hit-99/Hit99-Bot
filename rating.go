@@ -1,6 +1,40 @@
 package main
 
-import "github.com/disgoorg/snowflake/v2"
+import (
+	"fmt"
+
+	"github.com/disgoorg/snowflake/v2"
+	"github.com/fluxergo/fluxergo/fluxer"
+)
+
+// func(caller *fluxer.User, message *fluxer.Message, args []string) error
+
+// !getrating 42384928374982374
+// [getrating, 42384928374982374]
+
+func getRatingHandler(author *fluxer.User, message *fluxer.Message, args []string) error {
+	rating, err := getRating(args[1])
+	if err != nil {
+		return fmt.Errorf("error getting rating: %w", err)
+	}
+
+	RoleID := getRoleIDForRating(rating)
+
+	setRatingRole(rating, *message.GuildID, author.ID, RoleID)
+
+	ratingmsg := fluxer.NewMessageCreate().WithContent(fmt.Sprintf("Your premier rating is %d. Adding <@&%s> ", rating, RoleID))
+
+	_, err = client.Rest.CreateMessage(message.ChannelID, ratingmsg)
+	if err != nil {
+		return fmt.Errorf("error sending message: %w", err)
+	}
+
+	return nil
+}
+
+func linkRatingHandler(author *fluxer.User, message *fluxer.Message, args []string) error {
+	return fmt.Errorf("unimplemented")
+}
 
 type RatingMap struct {
 	Min  int
@@ -25,5 +59,10 @@ func getRoleIDForRating(yourRating int) snowflake.ID {
 		}
 	}
 	return snowflake.MustParse("1474240923272941718") // Default role if no match found
+}
 
+func setRatingRole(rating int, guildID snowflake.ID, userID snowflake.ID, ratingRole snowflake.ID) error {
+
+	err = client.Rest.AddMemberRole(guildID, userID, ratingRole)
+	return fmt.Errorf("error adding role: %w", err)
 }

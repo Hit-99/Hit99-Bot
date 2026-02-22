@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/disgoorg/snowflake/v2"
 	"github.com/fluxergo/fluxergo/events"
 	"github.com/fluxergo/fluxergo/fluxer"
@@ -30,7 +28,6 @@ func delMsgEmbed(channelID snowflake.ID, embedMsg *events.GuildMessageDelete) er
 }
 
 func editMsgEmbed(channelID snowflake.ID, embedMsg *events.GuildMessageUpdate) error {
-	fmt.Println(embedMsg.Message)
 	embed := fluxer.Embed{
 		Author: &fluxer.EmbedAuthor{
 			Name:    embedMsg.Message.Author.Username,
