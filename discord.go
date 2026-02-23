@@ -4,17 +4,19 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"os/signal"
-	"syscall"
 
 	"github.com/disgoorg/disgo"
 	dbot "github.com/disgoorg/disgo/bot"
+	"github.com/disgoorg/disgo/discord"
 	devents "github.com/disgoorg/disgo/events"
 	dgateway "github.com/disgoorg/disgo/gateway"
+	"github.com/disgoorg/snowflake/v2"
 )
 
-func initDiscord() {
-	dClient, derr := disgo.New(os.Getenv("DISCORD_BOT_TOKEN"),
+var dClient *dbot.Client
+
+func initDiscord() *dbot.Client {
+	dClient, err = disgo.New(os.Getenv("DISCORD_BOT_TOKEN"),
 		dbot.WithGatewayConfigOpts(
 			dgateway.WithIntents(
 				dgateway.IntentGuildMessages,
@@ -25,22 +27,30 @@ func initDiscord() {
 		dbot.WithEventListenerFunc(dOnReady),
 	)
 
-	if derr != nil {
-		fmt.Printf("error while building discord bot instance: %s\n", derr)
-		return
+	if err != nil {
+		fmt.Printf("error while building discord bot instance: %s\n", err)
+		return nil
 	}
 
-	derr = dClient.OpenGateway(context.TODO())
-	if derr != nil {
-		fmt.Printf("error while connecting to discord: %s\n", derr)
+	err = dClient.OpenGateway(context.TODO())
+	if err != nil {
+		fmt.Printf("error while connecting to discord: %s\n", err)
 	}
 
-	s := make(chan os.Signal, 1)
-	signal.Notify(s, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
-	<-s
+	return dClient
+
 }
 
 func dOnReady(event *devents.Ready) {
+
+	dlogid := snowflake.MustParse(os.Getenv("DLOG_CHANNEL_ID"))
+
+	dstartmsg := discord.NewMessageCreate().WithContent("Hit-99 Bot has started!")
+
+	_, err = dClient.Rest.CreateMessage(dlogid, dstartmsg)
+	if err != nil {
+		fmt.Printf("error while creating message: %s\n", err)
+	}
 
 	fmt.Println("the discord api works!!!")
 

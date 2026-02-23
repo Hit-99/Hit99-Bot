@@ -23,6 +23,10 @@ type Command struct {
 
 var Commands = []Command{
 	{
+		Name:    "ping",
+		Handler: pingpong, //pong
+	},
+	{
 		Name:    "rating",
 		Handler: getRatingHandler, //get rating, return to user
 	},
@@ -51,6 +55,18 @@ func getallroleshandler(caller *fluxer.User, message *fluxer.Message, args []str
 		fmt.Printf("Role: %s, ID: %s\n", role.Name, role.ID)
 
 	}
+	return nil
+}
+
+func pingpong(caller *fluxer.User, message *fluxer.Message, args []string) error {
+
+	pongmsg := fluxer.NewMessageCreate().WithContent("pong")
+	_, err = client.Rest.CreateMessage(message.ChannelID, pongmsg)
+
+	if err != nil {
+		return fmt.Errorf("error sending message: %w", err)
+	}
+
 	return nil
 }
 

@@ -46,7 +46,6 @@ func main() {
 		// bot.WithEventListenerFunc(userMsgDelEvent),
 		bot.WithEventListenerFunc(userMsgEditEvent),
 	)
-
 	if err != nil {
 		fmt.Printf("error while building bot instance: %s\n", err)
 		return
@@ -57,7 +56,11 @@ func main() {
 		fmt.Printf("error while connecting to fluxer: %s\n", err)
 	}
 
+	dClient := initDiscord()
+	fmt.Println("initialized discord bridge") // debug
+
 	defer client.Close(context.TODO())
+	defer dClient.Close(context.TODO())
 
 	s := make(chan os.Signal, 1)
 	signal.Notify(s, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
@@ -75,9 +78,11 @@ func onready(event *events.Ready) {
 		fmt.Printf("error while creating message: %s\n", err)
 	}
 
-	fmt.Println("the api works!!!")
+	fmt.Println("the fluxer api works!!!")
 
 	initCommands()
+	fmt.Println("initialized commands") // debug
 	initReactionRoles()
-	initDiscord()
+	fmt.Println("initialized reaction roles") // debug
+
 }

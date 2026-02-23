@@ -13,7 +13,7 @@ import (
 // [getrating, 42384928374982374]
 
 func getRatingHandler(author *fluxer.User, message *fluxer.Message, args []string) error {
-	rating, err := getRating(args[1])
+	rating, err := getPremierRating(args[1])
 	if err != nil {
 		return fmt.Errorf("error getting rating: %w", err)
 	}
@@ -22,7 +22,7 @@ func getRatingHandler(author *fluxer.User, message *fluxer.Message, args []strin
 
 	setRatingRole(rating, *message.GuildID, author.ID, RoleID)
 
-	ratingmsg := fluxer.NewMessageCreate().WithContent(fmt.Sprintf("Your premier rating is %d. Adding <@&%s> ", rating, RoleID))
+	ratingmsg := fluxer.NewMessageCreate().WithContent(fmt.Sprintf("Your premier rating is %d", rating))
 
 	_, err = client.Rest.CreateMessage(message.ChannelID, ratingmsg)
 	if err != nil {
@@ -37,8 +37,8 @@ func linkRatingHandler(author *fluxer.User, message *fluxer.Message, args []stri
 }
 
 type RatingMap struct {
-	Min  int
-	Max  int
+	Min  int64
+	Max  int64
 	Role string // fluxer role ID as string
 }
 
@@ -52,7 +52,7 @@ var ratings = []RatingMap{
 	{Min: 30000, Max: 40000, Role: "1474151158499020960"},
 }
 
-func getRoleIDForRating(yourRating int) snowflake.ID {
+func getRoleIDForRating(yourRating int64) snowflake.ID {
 	for _, rating := range ratings {
 		if yourRating >= rating.Min && yourRating <= rating.Max {
 			return snowflake.MustParse(rating.Role)
@@ -61,7 +61,7 @@ func getRoleIDForRating(yourRating int) snowflake.ID {
 	return snowflake.MustParse("1474240923272941718") // Default role if no match found
 }
 
-func setRatingRole(rating int, guildID snowflake.ID, userID snowflake.ID, ratingRole snowflake.ID) error {
+func setRatingRole(rating int64, guildID snowflake.ID, userID snowflake.ID, ratingRole snowflake.ID) error {
 
 	err = client.Rest.AddMemberRole(guildID, userID, ratingRole)
 	return fmt.Errorf("error adding role: %w", err)

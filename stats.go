@@ -9,5 +9,14 @@ import (
 // leetify stats auto messaging and commands handler
 
 func getStatsHandler(author *fluxer.User, message *fluxer.Message, args []string) error {
-	return fmt.Errorf("unimplemented")
+	profile, err := getLeetifyStats(args[1])
+
+	if err != nil {
+		return fmt.Errorf("error getting stats: %w", err)
+	}
+
+	stat := profile
+	fmt.Println("requested stat:", stat)
+
+	return nil
 }
