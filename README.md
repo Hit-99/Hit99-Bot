@@ -5,17 +5,18 @@ Features:
 - Auto roles on join
 - Server logging
 - Reaction roles
+- Leetify stats
+- Premier based role
+- Steam account link verification
 
 To Do:
 - Persistant roles (database)
 - Basic moderation
 - Channel purging
-- Premier based roles
-- Leetify stats
 - Event tracking (esports)
 - Report command
 - PUG server elo
-- Steam account link verification
+- Steam Item Inspect Links
 
 
 sample .env file

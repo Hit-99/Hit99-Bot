@@ -45,6 +45,7 @@ func main() {
 		bot.WithEventListenerFunc(userMsgSendEvent),
 		// bot.WithEventListenerFunc(userMsgDelEvent),
 		bot.WithEventListenerFunc(userMsgEditEvent),
+		bot.WithEventListenerFunc(csMatchListener),
 	)
 	if err != nil {
 		fmt.Printf("error while building bot instance: %s\n", err)

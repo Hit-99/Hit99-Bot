@@ -20,3 +20,5 @@ func getStatsHandler(author *fluxer.User, message *fluxer.Message, args []string
 
 	return nil
 }
+
+// still needs actual functionality

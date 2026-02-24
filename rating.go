@@ -32,10 +32,6 @@ func getRatingHandler(author *fluxer.User, message *fluxer.Message, args []strin
 	return nil
 }
 
-func linkRatingHandler(author *fluxer.User, message *fluxer.Message, args []string) error {
-	return fmt.Errorf("unimplemented")
-}
-
 type RatingMap struct {
 	Min  int64
 	Max  int64
