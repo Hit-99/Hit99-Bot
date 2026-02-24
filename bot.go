@@ -82,7 +82,7 @@ func onready(event *events.Ready) {
 
 	initCommands()
 	fmt.Println("initialized commands") // debug
-	// initReactionRoles()
+	initReactionRoles()
 	fmt.Println("initialized reaction roles") // debug
 	go initMatchListenter()
 	fmt.Println("initialized match listener") // debug
