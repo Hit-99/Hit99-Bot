@@ -74,8 +74,8 @@ func containsEmoji(emojiSlice map[string]string, emojiName string) bool {
 
 func updateReactionRoles(event *events.MessageReactionAdd) {
 
-	fmt.Println(event.Emoji.String())
-	fmt.Println(event.Emoji.Name)
+	// fmt.Println(event.Emoji.String())
+	// fmt.Println(event.Emoji.Name)
 
 	if event.UserID == client.ID() {
 		return

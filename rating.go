@@ -9,8 +9,8 @@ import (
 
 // func(caller *fluxer.User, message *fluxer.Message, args []string) error
 
-// !getrating 42384928374982374
-// [getrating, 42384928374982374]
+// !rating 42384928374982374
+// [rating, 42384928374982374]
 
 func getRatingHandler(author *fluxer.User, message *fluxer.Message, args []string) error {
 	rating, err := getPremierRating(args[1])
@@ -30,6 +30,7 @@ func getRatingHandler(author *fluxer.User, message *fluxer.Message, args []strin
 	}
 
 	return nil
+	// if no args and user is in db, just use ID in db. if args and user is in db, use args
 }
 
 type RatingMap struct {

@@ -45,7 +45,6 @@ func main() {
 		bot.WithEventListenerFunc(userMsgSendEvent),
 		// bot.WithEventListenerFunc(userMsgDelEvent),
 		bot.WithEventListenerFunc(userMsgEditEvent),
-		bot.WithEventListenerFunc(csMatchListener),
 	)
 	if err != nil {
 		fmt.Printf("error while building bot instance: %s\n", err)
@@ -83,7 +82,9 @@ func onready(event *events.Ready) {
 
 	initCommands()
 	fmt.Println("initialized commands") // debug
-	initReactionRoles()
+	// initReactionRoles()
 	fmt.Println("initialized reaction roles") // debug
+	go initMatchListenter()
+	fmt.Println("initialized match listener") // debug
 
 }

@@ -6,23 +6,19 @@ import (
 	"github.com/fluxergo/fluxergo/fluxer"
 )
 
-func linkRatingHandler(author *fluxer.User, message *fluxer.Message, args []string) error {
-	fluxerID := author.ID
-	steamID := args[1]
-	fmt.Printf("fluxerID: %s steamID: %s\n", fluxerID, steamID)
+// gets fluxerID and steamID and pairs them in db
 
-	if dbContainsID(fluxerID) != true {
+func linkRatingHandler(author *fluxer.User, message *fluxer.Message, args []string) error {
+	msgFluxerID := author.ID
+	msgSteamID := args[1]
+	fmt.Printf("fluxerID: %s steamID: %s\n", msgFluxerID, msgSteamID)
+
+	if linkContainsID(msgFluxerID) == true {
 		fmt.Println("User already exists")
 	} else {
-		dbCreateEntry(fluxerID, steamID)
+		linkCreateEntry(msgFluxerID, msgSteamID)
 		fmt.Println("User linked")
 	}
-
 	return err
+	// needs to check if fluxer id and/or steam id does not already exist
 }
-
-/*
-user runs !link STEAMID64
-the handler will check if the fluxer ID is already in the database
-if its not in the db, the user's fluxer ID and steam ID will be paired in the database
-*/
