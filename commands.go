@@ -28,11 +28,11 @@ var Commands = []Command{
 	},
 	{
 		Name:    "rating",
-		Handler: getRatingHandler, //get rating, return to user
+		Handler: getPremierRatingHandler, //get premier rating, return to user
 	},
 	{
 		Name:    "link",
-		Handler: linkRatingHandler, //get rating, get user object, assign role
+		Handler: linkSteamHandler, // link steam and fluxer ids
 	},
 	{
 		Name:    "getroles",

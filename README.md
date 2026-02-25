@@ -8,12 +8,12 @@ Features:
 - Leetify stats
 - Premier based role
 - Steam account link verification
+- Event tracking (esports)
 
 To Do:
 - Persistant roles (database)
 - Basic moderation
 - Channel purging
-- Event tracking (esports)
 - Report command
 - PUG server elo
 - Steam Item Inspect Links

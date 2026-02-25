@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 )
 
 // FYI https://api-public-docs.cs-prod.leetify.com/#/player/get_v3_profile
@@ -99,34 +100,38 @@ func getLeetifyStats(steamID string) (LeetifyProfile, error) {
 
 	resp, err := http.Get(url)
 	if err != nil {
+		fmt.Printf("error while getting response from leetify: %s\n", err)
 		return LeetifyProfile{}, err
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
+		fmt.Printf("error while reading from leetify: %s\n", err)
 		return LeetifyProfile{}, err
 	}
 
 	var profile LeetifyProfile
 	err = json.Unmarshal(body, &profile)
 	if err != nil {
+		fmt.Printf("error while unmarshalling json from leetify: %s\n", err)
 		return LeetifyProfile{}, err
 	}
 	return profile, nil
 }
 
-// gets premier rating
+// starts with bot and runs stats functions every 5 mins
 
-func getPremierRating(steamID string) (int64, error) {
+func initLeetifyStatsLoop() {
+	for _ = range time.Tick(time.Minute * 5) {
+		steamIDList := linkGetAllSteamIds()
+		for _, steamID := range steamIDList {
+			playerstats, _ := getLeetifyStats(steamID)
 
-	profile, err := getLeetifyStats(steamID)
-	if err != nil {
-		return 0, err
+			// looped stat functions go here
+
+			csMatchListener(playerstats)
+			updatePremierRatingRole(playerstats)
+		}
 	}
-	leetrating := profile.Ranks.Premier
-	leetRatingInt64, _ := leetrating.Int64()
-	fmt.Println("Premier Rating:", leetrating)
-
-	return leetRatingInt64, nil
 }

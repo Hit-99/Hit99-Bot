@@ -7,30 +7,40 @@ import (
 	"github.com/fluxergo/fluxergo/fluxer"
 )
 
-// func(caller *fluxer.User, message *fluxer.Message, args []string) error
-
-// !rating 42384928374982374
-// [rating, 42384928374982374]
-
-func getRatingHandler(author *fluxer.User, message *fluxer.Message, args []string) error {
-	rating, err := getPremierRating(args[1])
+// get steamid and return the rating
+func getPremierRatingHandler(author *fluxer.User, message *fluxer.Message, args []string) error {
+	profile, err := getLeetifyStats(steamID)
 	if err != nil {
 		return fmt.Errorf("error getting rating: %w", err)
 	}
-
-	RoleID := getRoleIDForRating(rating)
-
-	setRatingRole(rating, *message.GuildID, author.ID, RoleID)
-
-	ratingmsg := fluxer.NewMessageCreate().WithContent(fmt.Sprintf("Your premier rating is %d", rating))
-
+	premierRating := profile.Ranks.Premier
+	fmt.Println("Premier Rating:", premierRating)
+	ratingmsg := fluxer.NewMessageCreate().WithContent(fmt.Sprintf("Your premier rating is %s", premierRating))
 	_, err = client.Rest.CreateMessage(message.ChannelID, ratingmsg)
 	if err != nil {
 		return fmt.Errorf("error sending message: %w", err)
 	}
 
 	return nil
-	// if no args and user is in db, just use ID in db. if args and user is in db, use args
+}
+
+// updates premier rating role when run
+func updatePremierRatingRole(playerstats LeetifyProfile) error {
+	premierRating, err := playerstats.Ranks.Premier.Int64()
+	if err != nil {
+		return fmt.Errorf("error getting premier rating: %w", err)
+	}
+	roleID := getRoleIDForRating(premierRating)
+	fluxerID, err := getFluxerIDFromSteamID(playerstats.SteamID)
+	userID := snowflake.MustParse(fluxerID)
+	if err != nil {
+		return fmt.Errorf("error getting fluxerID: %w", err)
+	}
+	guildID := snowflake.MustParse("1473790485412413471")
+	setPremierRatingRole(guildID, userID, roleID)
+	return err
+
+	// needs to check if user has a role and if its the correct role
 }
 
 type RatingMap struct {
@@ -40,7 +50,7 @@ type RatingMap struct {
 }
 
 var ratings = []RatingMap{
-	{Min: 0, Max: 4999, Role: "1474150338416083289"},
+	{Min: 1, Max: 4999, Role: "1474150338416083289"},
 	{Min: 5000, Max: 9999, Role: "1474150621913350288"},
 	{Min: 10000, Max: 14999, Role: "1474150730499625213"},
 	{Min: 15000, Max: 19999, Role: "1474150710530552040"},
@@ -58,8 +68,9 @@ func getRoleIDForRating(yourRating int64) snowflake.ID {
 	return snowflake.MustParse("1474240923272941718") // Default role if no match found
 }
 
-func setRatingRole(rating int64, guildID snowflake.ID, userID snowflake.ID, ratingRole snowflake.ID) error {
-
+func setPremierRatingRole(guildID snowflake.ID, userID snowflake.ID, ratingRole snowflake.ID) error {
 	err = client.Rest.AddMemberRole(guildID, userID, ratingRole)
 	return fmt.Errorf("error adding role: %w", err)
 }
+
+// these last two functions can be rewritten

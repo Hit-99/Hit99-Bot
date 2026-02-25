@@ -35,7 +35,7 @@ func init() {
 	// creates matches table if it doesnt exist
 	steamAndMatchesSchema := `
 	CREATE TABLE IF NOT EXISTS matches (
-		ID UUID PRIMARY KEY,
+		ID INTEGER PRIMARY KEY AUTOINCREMENT,
 		steamID TEXT NOT NULL,
 		matchID TEXT NOT NULL
 	);
@@ -157,4 +157,16 @@ func matchesCreateEntry(steamID string, matchID string) {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func getFluxerIDFromSteamID(steamID string) (string, error) {
+	var fluxerID string
+	err := db.QueryRow("SELECT fluxerID from link where steamID = ?", steamID).Scan(&fluxerID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return "", nil
+		}
+		log.Fatal(err)
+	}
+	return fluxerID, nil
 }

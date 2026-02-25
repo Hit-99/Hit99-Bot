@@ -84,7 +84,7 @@ func onready(event *events.Ready) {
 	fmt.Println("initialized commands") // debug
 	initReactionRoles()
 	fmt.Println("initialized reaction roles") // debug
-	go initMatchListenter()
-	fmt.Println("initialized match listener") // debug
+	go initLeetifyStatsLoop()
+	fmt.Println("initialized stats functions") // debug
 
 }
