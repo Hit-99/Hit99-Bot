@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/disgoorg/snowflake/v2"
 )
 
@@ -12,6 +14,7 @@ var matchChannelID snowflake.ID
 func csMatchListener(playerstats LeetifyProfile) {
 	matchChannelID = snowflake.MustParse("1475607334483988934")
 	apiMatchID := playerstats.RecentMatches[0].ID
+	fmt.Println("(debug) matchID: ", apiMatchID) // debug
 	steamID = playerstats.SteamID
 
 	ifMatchExist, _ := ifMatchExistsForUser(steamID, apiMatchID)
