@@ -23,9 +23,20 @@ func check(e error) {
 	}
 }
 
-func checkForLogsDir() {
+func checkAndCreateLogsDir() *os.File {
 	err := os.MkdirAll("logs", 0755)
 	check(err)
+	path := filepath.Join("logs", "latest.log")
+	f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	check(err)
+	defer f.Close()
+	return f
+}
+
+func formatTime() string {
+	currTime := time.Now()
+	formattedTime := currTime.Format("15:04:05")
+	return formattedTime
 }
 
 // logs all fluxer events to log channel and archives them daily
@@ -131,53 +142,32 @@ func channelDeleteEvent(channelDelete *events.GuildChannelDelete) {
 
 // Write user join event to file
 func logUserJoin(join *events.GuildMemberJoin) {
-	currTime := time.Now()
-	formattedTime := currTime.Format("15:04:05")
-
 	userJoin := join.Member.User.ID
 
-	checkForLogsDir()
-	path := filepath.Join("logs", "latest.log")
-	f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
-	check(err)
-	defer f.Close()
-	_, err = fmt.Fprintf(f, "[%s] <%s> joined\n", formattedTime, userJoin)
+	f := checkAndCreateLogsDir()
+	_, err = fmt.Fprintf(f, "[%s] <%s> joined\n", formatTime(), userJoin)
 	check(err)
 }
 
 // Write user leave event to file
 func logUserLeave(leave *events.GuildMemberLeave) {
-	currTime := time.Now()
-	formattedTime := currTime.Format("15:04:05")
-
 	userLeave := leave.Member.User.ID
 
-	checkForLogsDir()
-	path := filepath.Join("logs", "latest.log")
-	f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
-	check(err)
-	defer f.Close()
-	_, err = fmt.Fprintf(f, "[%s] <%s> left\n", formattedTime, userLeave)
+	f := checkAndCreateLogsDir()
+	_, err = fmt.Fprintf(f, "[%s] <%s> left\n", formatTime(), userLeave)
 	check(err)
 }
 
 // Write message send event to file
 func logMsgSend(msgSend *events.GuildMessageCreate) {
-	currTime := time.Now()
-	formattedTime := currTime.Format("15:04:05")
-
 	message := msgSend.Message.Content
 	messageID := msgSend.MessageID
 	// if content = "", dont send (if its media, send attachment name/link)
 	author := msgSend.Message.Author.ID
 	channelID := msgSend.ChannelID
 
-	checkForLogsDir()
-	path := filepath.Join("logs", "latest.log")
-	f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
-	check(err)
-	defer f.Close()
-	_, err = fmt.Fprintf(f, "[%s] <%s> <%s> <%s> » %s\n", formattedTime, messageID, channelID, author, message) // [time] <messageID> <channelID> <authorID> » msg
+	f := checkAndCreateLogsDir()
+	_, err = fmt.Fprintf(f, "[%s] <%s> <%s> <%s> » %s\n", formatTime(), messageID, channelID, author, message) // [time] <messageID> <channelID> <authorID> » msg
 	check(err)
 
 	// logs bot and author if sending message on discord through bridge
@@ -185,9 +175,6 @@ func logMsgSend(msgSend *events.GuildMessageCreate) {
 
 // Write message edit event to file
 func logMsgEdit(msgEdit *events.GuildMessageUpdate) {
-	currTime := time.Now()
-	formattedTime := currTime.Format("15:04:05")
-
 	messageNew := msgEdit.Message.Content
 	messageOld := msgEdit.OldMessage.Content // returning a blank string
 	messageID := msgEdit.MessageID
@@ -195,12 +182,8 @@ func logMsgEdit(msgEdit *events.GuildMessageUpdate) {
 	authorID := msgEdit.Message.Author.ID
 	channelID := msgEdit.ChannelID
 
-	checkForLogsDir()
-	path := filepath.Join("logs", "latest.log")
-	f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
-	check(err)
-	defer f.Close()
-	_, err = fmt.Fprintf(f, "[%s] <%s> <%s> <%s> (BEFORE) » %s   (AFTER) » %s\n", formattedTime, messageID, channelID, authorID, messageOld, messageNew) // [time] <messageID> <channelID> <authorID> (BEFORE) » oldMsg   (AFTER) » newMsg
+	f := checkAndCreateLogsDir()
+	_, err = fmt.Fprintf(f, "[%s] <%s> <%s> <%s> (BEFORE) » %s   (AFTER) » %s\n", formatTime(), messageID, channelID, authorID, messageOld, messageNew) // [time] <messageID> <channelID> <authorID> (BEFORE) » oldMsg   (AFTER) » newMsg
 	check(err)
 
 	// embeds loading and deletion for links counts as an edit update
@@ -208,20 +191,13 @@ func logMsgEdit(msgEdit *events.GuildMessageUpdate) {
 
 // Write message delete event to file
 func logMsgDelete(msgDel *events.GuildMessageDelete) {
-	currTime := time.Now()
-	formattedTime := currTime.Format("15:04:05")
-
 	message := msgDel.Message.Content
 	messageID := msgDel.MessageID
 	authorID := msgDel.Message.Author.ID
 	channelID := msgDel.ChannelID
 
-	checkForLogsDir()
-	path := filepath.Join("logs", "latest.log")
-	f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
-	check(err)
-	defer f.Close()
-	_, err = fmt.Fprintf(f, "[%s] <%s> <%s> <%s> (DELETED) » %s\n", formattedTime, messageID, channelID, authorID, message) // [time] <messageID> <channelID> <authorID> (DELETED) » msg
+	f := checkAndCreateLogsDir()
+	_, err = fmt.Fprintf(f, "[%s] <%s> <%s> <%s> (DELETED) » %s\n", formatTime(), messageID, channelID, authorID, message) // [time] <messageID> <channelID> <authorID> (DELETED) » msg
 	check(err)
 }
 
@@ -230,96 +206,54 @@ func logMsgDelete(msgDel *events.GuildMessageDelete) {
 
 // Write role create event to file
 func logRoleCreate(roleCreate *events.RoleCreate) {
-	currTime := time.Now()
-	formattedTime := currTime.Format("15:04:05")
-
 	roleID := roleCreate.Role.ID
 
-	checkForLogsDir()
-	path := filepath.Join("logs", "latest.log")
-	f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
-	check(err)
-	defer f.Close()
-	_, err = fmt.Fprintf(f, "[%s] <%s> role created\n", formattedTime, roleID)
+	f := checkAndCreateLogsDir()
+	_, err = fmt.Fprintf(f, "[%s] <%s> role created\n", formatTime(), roleID)
 	check(err)
 }
 
 // Write role edit event to file
 func logRoleUpdate(roleUpdate *events.RoleUpdate) {
-	currTime := time.Now()
-	formattedTime := currTime.Format("15:04:05")
-
 	roleID := roleUpdate.Role.ID
 
-	checkForLogsDir()
-	path := filepath.Join("logs", "latest.log")
-	f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
-	check(err)
-	defer f.Close()
-	_, err = fmt.Fprintf(f, "[%s] <%s> role updated\n", formattedTime, roleID)
+	f := checkAndCreateLogsDir()
+	_, err = fmt.Fprintf(f, "[%s] <%s> role updated\n", formatTime(), roleID)
 	check(err)
 }
 
 // Write role delete event to file
 func logRoleDelete(roleDelete *events.RoleDelete) {
-	currTime := time.Now()
-	formattedTime := currTime.Format("15:04:05")
-
 	roleID := roleDelete.Role.ID
 
-	checkForLogsDir()
-	path := filepath.Join("logs", "latest.log")
-	f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
-	check(err)
-	defer f.Close()
-	_, err = fmt.Fprintf(f, "[%s] <%s> role deleted\n", formattedTime, roleID)
+	f := checkAndCreateLogsDir()
+	_, err = fmt.Fprintf(f, "[%s] <%s> role deleted\n", formatTime(), roleID)
 	check(err)
 }
 
 // Write channel create event to file
 func logChannelCreate(channelCreate *events.GuildChannelCreate) {
-	currTime := time.Now()
-	formattedTime := currTime.Format("15:04:05")
-
 	channelID := channelCreate.ChannelID
 
-	checkForLogsDir()
-	path := filepath.Join("logs", "latest.log")
-	f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
-	check(err)
-	defer f.Close()
-	_, err = fmt.Fprintf(f, "[%s] <%s> channel created\n", formattedTime, channelID)
+	f := checkAndCreateLogsDir()
+	_, err = fmt.Fprintf(f, "[%s] <%s> channel created\n", formatTime(), channelID)
 	check(err)
 }
 
 // Write channel edit event to file
 func logChannelUpdate(channelUpdate *events.GuildChannelUpdate) {
-	currTime := time.Now()
-	formattedTime := currTime.Format("15:04:05")
-
 	channelID := channelUpdate.ChannelID
 
-	checkForLogsDir()
-	path := filepath.Join("logs", "latest.log")
-	f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
-	check(err)
-	defer f.Close()
-	_, err = fmt.Fprintf(f, "[%s] <%s> channel updated\n", formattedTime, channelID)
+	f := checkAndCreateLogsDir()
+	_, err = fmt.Fprintf(f, "[%s] <%s> channel updated\n", formatTime(), channelID)
 	check(err)
 }
 
 // Write channel delete event to file
 func logChannelDelete(channelDelete *events.GuildChannelDelete) {
-	currTime := time.Now()
-	formattedTime := currTime.Format("15:04:05")
-
 	channelID := channelDelete.ChannelID
 
-	checkForLogsDir()
-	path := filepath.Join("logs", "latest.log")
-	f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
-	check(err)
-	defer f.Close()
-	_, err = fmt.Fprintf(f, "[%s] <%s> channel deleted\n", formattedTime, channelID)
+	f := checkAndCreateLogsDir()
+	_, err = fmt.Fprintf(f, "[%s] <%s> channel deleted\n", formatTime(), channelID)
 	check(err)
 }
