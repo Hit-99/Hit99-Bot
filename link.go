@@ -12,21 +12,29 @@ import (
 func linkSteamHandler(author *fluxer.User, message *fluxer.Message, args []string) error {
 	msgFluxerID := author.ID
 	msgSteamID := args[1]
-	if strings.Contains(msgSteamID, "765611") {
-		fmt.Println("(debug) steam64 ID: ", msgSteamID)
-		// checks if steam64 id
-	} else if strings.Contains(msgSteamID, "https://steamcommunity.com/id/") {
-		vanityUser := strings.TrimPrefix(msgSteamID, "https://steamcommunity.com/id/")
+
+	if strings.Contains(msgSteamID, "https://steamcommunity.com/") {
+		var vanityUser string
+		if strings.Contains(msgSteamID, "/id/") {
+			vanityUser = strings.TrimPrefix(msgSteamID, "https://steamcommunity.com/id/")
+		}
+		if strings.Contains(msgSteamID, "/profiles/") {
+			vanityUser = strings.TrimPrefix(msgSteamID, "https://steamcommunity.com/profiles/")
+		}
 		vanityUser = strings.TrimSuffix(vanityUser, "/")
-		fmt.Println("(debug) steam url: ", vanityUser)
-		msgSteamID, err = getSteamID(vanityUser)
-		if err != nil {
-			return fmt.Errorf("error getting steam id: %w", err)
+		if strings.Contains(vanityUser, "765611") {
+			msgSteamID = vanityUser
+		} else {
+			msgSteamID, err = getSteamID(vanityUser)
+			if err != nil {
+				return fmt.Errorf("error getting steam id: %w", err)
+			}
 		}
 		// get just the vanity username at the end of link
 		// ex. https://steamcommunity.com/id/Hyp3r7/ gets "Hyp3r7"
+	} else if strings.Contains(msgSteamID, "765611") {
+		// checks if steam64 id
 	} else {
-		fmt.Println("(debug) steam misc: ", msgSteamID)
 		msgSteamID, err = getSteamID(msgSteamID)
 		if err != nil {
 			return fmt.Errorf("error getting steam id: %w", err)
@@ -36,7 +44,6 @@ func linkSteamHandler(author *fluxer.User, message *fluxer.Message, args []strin
 	fmt.Printf("fluxerID: %s steamID: %s\n", msgFluxerID, msgSteamID)
 
 	if linkContainsID(msgFluxerID) == true {
-		fmt.Println("(debug) User already exists")
 		alreadyLinkedMsg := fluxer.NewMessageCreate().WithContent(fmt.Sprintf("Your account has already been linked <@!%s>", msgFluxerID))
 		_, err = client.Rest.CreateMessage(message.ChannelID, alreadyLinkedMsg)
 		if err != nil {

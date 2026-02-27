@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/disgoorg/snowflake/v2"
@@ -10,11 +11,12 @@ import (
 )
 
 const (
-	colorHit99     = 0x4caf50
-	colorError     = 0xf44336
-	colorEdit      = 0xff9800
-	colorMatchWin  = 0x4caf50
-	colorMatchLoss = 0xf44336
+	colorHit99      = 0x4caf50
+	colorError      = 0xf44336
+	colorEdit       = 0xff9800
+	colorMatchWin   = 0x4caf50
+	colorMatchLoss  = 0xf44336
+	colorMatchOther = 0x808080
 )
 
 var embedColor int
@@ -41,7 +43,7 @@ func editMsgEmbed(channelID snowflake.ID, embedMsg *events.GuildMessageUpdate) e
 			IconURL: *embedMsg.Message.Author.AvatarURL(),
 		},
 		Color:       0xf44336,
-		Description: "After: " + embedMsg.Message.Content,
+		Description: "Before: " + embedMsg.OldMessage.Content + "After: " + embedMsg.Message.Content,
 		Timestamp:   &embedMsg.Message.CreatedAt,
 	}
 	embedOut := fluxer.NewMessageCreate().WithContent("").WithEmbeds(embed)
@@ -50,15 +52,50 @@ func editMsgEmbed(channelID snowflake.ID, embedMsg *events.GuildMessageUpdate) e
 }
 
 func matchStatsEmbed(channelID snowflake.ID, matchStats LeetifyProfile) error {
-	if matchStats.RecentMatches[0].Outcome == "loss" {
+	switch matchStats.RecentMatches[0].Outcome {
+	case "loss":
 		embedColor = colorMatchLoss
-	} else {
+	case "win":
 		embedColor = colorMatchWin
+	default:
+		embedColor = colorMatchOther
 	}
 	finishedAtStr := matchStats.RecentMatches[0].FinshedAt
 	parsedTime, err := time.Parse(time.RFC3339, finishedAtStr)
 	if err != nil {
 		return err
+	}
+
+	leetifyReformat, _ := matchStats.RecentMatches[0].LeetifyRating.Float64()
+	playerRank, _ := matchStats.RecentMatches[0].Rank.Int64()
+	var playerRankName string
+	var playerRankMap = map[string]string{
+		"0":  "Unranked",
+		"1":  "Silver 1",
+		"2":  "Silver II",
+		"3":  "Silver III",
+		"4":  "Silver IV",
+		"5":  "Silver Elite",
+		"6":  "Silver Elite Master",
+		"7":  "Gold Nova I",
+		"8":  "Gold Nova II",
+		"9":  "Gold Nova III",
+		"10": "Gold Nova Master",
+		"11": "Master Guardian I",
+		"12": "Master Guardian II",
+		"13": "Master Guardian Elite",
+		"14": "Destinguished Master Guardian",
+		"15": "Legendary Eagle",
+		"16": "Legendary Eagle Master",
+		"17": "Supreme Master First Class",
+		"18": "The Global Elite",
+	}
+
+	if playerRank < 1000 {
+		playerRankName = playerRankMap[strconv.Itoa(int(playerRank))]
+	} else {
+		playerRankName = strconv.Itoa(int(playerRank))
+
 	}
 
 	embed := fluxer.Embed{
@@ -67,9 +104,9 @@ func matchStatsEmbed(channelID snowflake.ID, matchStats LeetifyProfile) error {
 		Author: &fluxer.EmbedAuthor{
 			Name: fmt.Sprintf("%s  %s  ->  %s", matchStats.RecentMatches[0].Score, matchStats.RecentMatches[0].MapName, matchStats.UserName),
 		},
-		Description: fmt.Sprintf("**Rank:** %s\n**Leetify Rating:** %s\n**Preaim:** %s\n**Reaction Time (MS):** %s\n**Accuracy Enemy Spotted:** %s\n**Accuracy Head:** %s\n**Spray Accuracy:** %s",
-			matchStats.RecentMatches[0].Rank,
-			matchStats.RecentMatches[0].LeetifyRating,
+		Description: fmt.Sprintf("**Rank:** %s\n**Leetify Rating:** %v\n**Preaim:** %s\n**Reaction Time (MS):** %s\n**Accuracy Enemy Spotted:** %s\n**Accuracy Head:** %s\n**Spray Accuracy:** %s",
+			playerRankName,
+			(leetifyReformat * 100),
 			matchStats.RecentMatches[0].Preaim,
 			matchStats.RecentMatches[0].ReactionTimeMS,
 			matchStats.RecentMatches[0].AccuracyEnemySpotted,

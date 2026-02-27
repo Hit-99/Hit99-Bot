@@ -170,3 +170,15 @@ func getFluxerIDFromSteamID(steamID string) (string, error) {
 	}
 	return fluxerID, nil
 }
+
+func ifMatchExistsForUser(steamID string, apiMatchID string) (bool, error) {
+	var index string
+	err := db.QueryRow("SELECT 1 from matches where steamID = ? AND matchID = ?", steamID, apiMatchID).Scan(&index)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return false, nil
+		}
+		log.Fatal(err)
+	}
+	return true, nil
+}

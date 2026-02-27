@@ -125,9 +125,10 @@ func getLeetifyStats(steamID string) (LeetifyProfile, error) {
 func initLeetifyStatsLoop() {
 	for _ = range time.Tick(time.Minute * 5) {
 		steamIDList := linkGetAllSteamIds()
+		// fmt.Println("(debug) steamID list: ", steamIDList) // debug
 		for _, steamID := range steamIDList {
 			playerstats, _ := getLeetifyStats(steamID)
-
+			// fmt.Println("(debug) playerstats: ", playerstats.UserName) // debug
 			// looped stat functions go here
 
 			csMatchListener(playerstats)
