@@ -51,8 +51,14 @@ func editMsgEmbed(channelID snowflake.ID, embedMsg *events.GuildMessageUpdate) e
 	return err
 }
 
-func matchStatsEmbed(channelID snowflake.ID, matchStats LeetifyProfile) error {
-	switch matchStats.RecentMatches[0].Outcome {
+func matchStatsEmbed(channelID snowflake.ID, matchStats LeetifyProfile, matchID string) error {
+	var recentMatch int
+	for i := range matchStats.RecentMatches {
+		if matchStats.RecentMatches[i].ID == matchID {
+			recentMatch = i
+		}
+	}
+	switch matchStats.RecentMatches[recentMatch].Outcome {
 	case "loss":
 		embedColor = colorMatchLoss
 	case "win":
@@ -60,14 +66,14 @@ func matchStatsEmbed(channelID snowflake.ID, matchStats LeetifyProfile) error {
 	default:
 		embedColor = colorMatchOther
 	}
-	finishedAtStr := matchStats.RecentMatches[0].FinshedAt
+	finishedAtStr := matchStats.RecentMatches[recentMatch].FinshedAt
 	parsedTime, err := time.Parse(time.RFC3339, finishedAtStr)
 	if err != nil {
 		return err
 	}
 
-	leetifyReformat, _ := matchStats.RecentMatches[0].LeetifyRating.Float64()
-	playerRank, _ := matchStats.RecentMatches[0].Rank.Int64()
+	leetifyReformat, _ := matchStats.RecentMatches[recentMatch].LeetifyRating.Float64()
+	playerRank, _ := matchStats.RecentMatches[recentMatch].Rank.Int64()
 	var playerRankName string
 	var playerRankMap = map[string]string{
 		"0":  "Unranked",
@@ -100,27 +106,27 @@ func matchStatsEmbed(channelID snowflake.ID, matchStats LeetifyProfile) error {
 
 	embed := fluxer.Embed{
 		Title: "View on Leetify",
-		Color: embedColor, // make if statement to swap win and loss colors
+		Color: embedColor,
 		Author: &fluxer.EmbedAuthor{
-			Name: fmt.Sprintf("%s  %s  ->  %s", matchStats.RecentMatches[0].Score, matchStats.RecentMatches[0].MapName, matchStats.UserName),
+			Name: fmt.Sprintf("%s  %s  ->  %s", matchStats.RecentMatches[recentMatch].Score, matchStats.RecentMatches[recentMatch].MapName, matchStats.UserName),
 		},
-		Description: fmt.Sprintf("**Rank:** %s\n**Leetify Rating:** %v\n**Preaim:** %s\n**Reaction Time (MS):** %s\n**Accuracy Enemy Spotted:** %s\n**Accuracy Head:** %s\n**Spray Accuracy:** %s",
+		Description: fmt.Sprintf("**Rank:** %s\n**Leetify Rating:** %.2f\n**Preaim:** %s\n**Reaction Time (MS):** %s\n**Accuracy Enemy Spotted:** %s\n**Accuracy Head:** %s\n**Spray Accuracy:** %s",
 			playerRankName,
 			(leetifyReformat * 100),
-			matchStats.RecentMatches[0].Preaim,
-			matchStats.RecentMatches[0].ReactionTimeMS,
-			matchStats.RecentMatches[0].AccuracyEnemySpotted,
-			matchStats.RecentMatches[0].AccuracyHead,
-			matchStats.RecentMatches[0].SprayAccuracy),
+			matchStats.RecentMatches[recentMatch].Preaim,
+			matchStats.RecentMatches[recentMatch].ReactionTimeMS,
+			matchStats.RecentMatches[recentMatch].AccuracyEnemySpotted,
+			matchStats.RecentMatches[recentMatch].AccuracyHead,
+			matchStats.RecentMatches[recentMatch].SprayAccuracy),
 		Timestamp: &parsedTime,
-		URL:       fmt.Sprintf("https://leetify.com/app/match-details/%s/your-match", matchStats.RecentMatches[0].ID),
+		URL:       fmt.Sprintf("https://leetify.com/app/match-details/%s/your-match", matchStats.RecentMatches[recentMatch].ID),
 		Thumbnail: &fluxer.EmbedResource{
 			URL:    "https://cloud.hy7.dev/apps/files_sharing/publicpreview/dooMgMXNSf3Q4r2?file=/&fileId=4110&x=1920&y=1080&a=true&etag=535ca46af95fa6a0cca81a465677911d",
 			Height: 115,
 			Width:  270,
 		},
 		Footer: &fluxer.EmbedFooter{
-			Text:    matchStats.RecentMatches[0].ID,
+			Text:    matchStats.RecentMatches[recentMatch].ID,
 			IconURL: "https://fluxerusercontent.com/attachments/1473793058206990390/1475614229764805051/Artboard_1.png",
 		},
 	}

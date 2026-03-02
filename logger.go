@@ -29,7 +29,6 @@ func checkAndCreateLogsDir() *os.File {
 	path := filepath.Join("logs", "latest.log")
 	f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 	check(err)
-	defer f.Close()
 	return f
 }
 
@@ -147,6 +146,7 @@ func logUserJoin(join *events.GuildMemberJoin) {
 	f := checkAndCreateLogsDir()
 	_, err = fmt.Fprintf(f, "[%s] <%s> joined\n", formatTime(), userJoin)
 	check(err)
+	defer f.Close()
 }
 
 // Write user leave event to file
@@ -156,6 +156,7 @@ func logUserLeave(leave *events.GuildMemberLeave) {
 	f := checkAndCreateLogsDir()
 	_, err = fmt.Fprintf(f, "[%s] <%s> left\n", formatTime(), userLeave)
 	check(err)
+	defer f.Close()
 }
 
 // Write message send event to file
@@ -169,6 +170,7 @@ func logMsgSend(msgSend *events.GuildMessageCreate) {
 	f := checkAndCreateLogsDir()
 	_, err = fmt.Fprintf(f, "[%s] <%s> <%s> <%s> » %s\n", formatTime(), messageID, channelID, author, message) // [time] <messageID> <channelID> <authorID> » msg
 	check(err)
+	defer f.Close()
 
 	// logs bot and author if sending message on discord through bridge
 }
@@ -185,6 +187,7 @@ func logMsgEdit(msgEdit *events.GuildMessageUpdate) {
 	f := checkAndCreateLogsDir()
 	_, err = fmt.Fprintf(f, "[%s] <%s> <%s> <%s> (BEFORE) » %s   (AFTER) » %s\n", formatTime(), messageID, channelID, authorID, messageOld, messageNew) // [time] <messageID> <channelID> <authorID> (BEFORE) » oldMsg   (AFTER) » newMsg
 	check(err)
+	defer f.Close()
 
 	// embeds loading and deletion for links counts as an edit update
 }
@@ -199,6 +202,7 @@ func logMsgDelete(msgDel *events.GuildMessageDelete) {
 	f := checkAndCreateLogsDir()
 	_, err = fmt.Fprintf(f, "[%s] <%s> <%s> <%s> (DELETED) » %s\n", formatTime(), messageID, channelID, authorID, message) // [time] <messageID> <channelID> <authorID> (DELETED) » msg
 	check(err)
+	defer f.Close()
 }
 
 // Write message reply event to file
@@ -211,6 +215,7 @@ func logRoleCreate(roleCreate *events.RoleCreate) {
 	f := checkAndCreateLogsDir()
 	_, err = fmt.Fprintf(f, "[%s] <%s> role created\n", formatTime(), roleID)
 	check(err)
+	defer f.Close()
 }
 
 // Write role edit event to file
@@ -220,6 +225,7 @@ func logRoleUpdate(roleUpdate *events.RoleUpdate) {
 	f := checkAndCreateLogsDir()
 	_, err = fmt.Fprintf(f, "[%s] <%s> role updated\n", formatTime(), roleID)
 	check(err)
+	defer f.Close()
 }
 
 // Write role delete event to file
@@ -229,6 +235,7 @@ func logRoleDelete(roleDelete *events.RoleDelete) {
 	f := checkAndCreateLogsDir()
 	_, err = fmt.Fprintf(f, "[%s] <%s> role deleted\n", formatTime(), roleID)
 	check(err)
+	defer f.Close()
 }
 
 // Write channel create event to file
@@ -238,6 +245,7 @@ func logChannelCreate(channelCreate *events.GuildChannelCreate) {
 	f := checkAndCreateLogsDir()
 	_, err = fmt.Fprintf(f, "[%s] <%s> channel created\n", formatTime(), channelID)
 	check(err)
+	defer f.Close()
 }
 
 // Write channel edit event to file
@@ -247,6 +255,7 @@ func logChannelUpdate(channelUpdate *events.GuildChannelUpdate) {
 	f := checkAndCreateLogsDir()
 	_, err = fmt.Fprintf(f, "[%s] <%s> channel updated\n", formatTime(), channelID)
 	check(err)
+	defer f.Close()
 }
 
 // Write channel delete event to file
@@ -256,4 +265,5 @@ func logChannelDelete(channelDelete *events.GuildChannelDelete) {
 	f := checkAndCreateLogsDir()
 	_, err = fmt.Fprintf(f, "[%s] <%s> channel deleted\n", formatTime(), channelID)
 	check(err)
+	defer f.Close()
 }

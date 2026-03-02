@@ -8,7 +8,6 @@ import (
 )
 
 // give users member role on join
-
 func autorole(event *events.GuildMemberJoin) {
 	fmt.Println("user joined")
 	memberRoleID := snowflake.MustParse("1474078482417119356")

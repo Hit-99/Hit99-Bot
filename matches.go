@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"time"
 
 	"github.com/disgoorg/snowflake/v2"
 )
@@ -13,14 +13,28 @@ var matchChannelID snowflake.ID
 
 func csMatchListener(playerstats LeetifyProfile) {
 	matchChannelID = snowflake.MustParse("1475607334483988934")
-	apiMatchID := playerstats.RecentMatches[0].ID
-	fmt.Println("(debug) matchID: ", apiMatchID) // debug
-	steamID = playerstats.SteamID
+	for _, match := range playerstats.RecentMatches {
+		matchID := match.ID
+		recentMatch := playerstats.RecentMatches[0].ID
+		steamID = playerstats.SteamID
 
-	ifMatchExist, _ := ifMatchExistsForUser(steamID, apiMatchID)
-	if !ifMatchExist {
-		matchesCreateEntry(steamID, apiMatchID)
-		matchStatsEmbed(matchChannelID, playerstats)
+		time.Sleep(1000000000)
+
+		ifMatchExist, _ := ifMatchExistsForUser(steamID, matchID)
+		if !ifMatchExist {
+			matchesCreateEntry(steamID, recentMatch)
+			matchStatsEmbed(matchChannelID, playerstats, matchID)
+			return
+		} else if matchID == recentMatch {
+			return
+		} else { // will send all previous in reverse chronological order
+			matchesCreateEntry(steamID, matchID)
+			matchStatsEmbed(matchChannelID, playerstats, matchID)
+			if matchID == recentMatch {
+				return
+			}
+		}
 	}
-	// fmt.Println("(debug) matches updated")
 }
+
+// if bot is reconnecting, it will still add to db even if message is never sent
