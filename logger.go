@@ -107,7 +107,7 @@ func roleUpdateEvent(roleUpdate *events.RoleUpdate) {
 
 // Delete Role Log Event
 func roleDeleteEvent(roleDelete *events.RoleDelete) {
-	roleDeleteMsg := fluxer.NewMessageCreate().WithContent(fmt.Sprintf("%s role updated", roleDelete.Role))
+	roleDeleteMsg := fluxer.NewMessageCreate().WithContent(fmt.Sprintf("%s role deleted", roleDelete.Role))
 	logRoleDelete(roleDelete)
 
 	_, err = client.Rest.CreateMessage(logChannelID, roleDeleteMsg)
@@ -123,7 +123,7 @@ func channelCreateEvent(channelCreate *events.GuildChannelCreate) {
 
 // Channel Update Event
 func channelUpdateEvent(channelUpdate *events.GuildChannelUpdate) {
-	channelUpdateMsg := fluxer.NewMessageCreate().WithContent(fmt.Sprintf("%s channel created", channelUpdate.ChannelID))
+	channelUpdateMsg := fluxer.NewMessageCreate().WithContent(fmt.Sprintf("%s channel updated", channelUpdate.ChannelID))
 	logChannelUpdate(channelUpdate)
 
 	_, err = client.Rest.CreateMessage(logChannelID, channelUpdateMsg)
@@ -131,7 +131,7 @@ func channelUpdateEvent(channelUpdate *events.GuildChannelUpdate) {
 
 // Channel Deletion Event
 func channelDeleteEvent(channelDelete *events.GuildChannelDelete) {
-	channelDeleteMsg := fluxer.NewMessageCreate().WithContent(fmt.Sprintf("%s channel created", channelDelete.ChannelID))
+	channelDeleteMsg := fluxer.NewMessageCreate().WithContent(fmt.Sprintf("%s channel deleted", channelDelete.ChannelID))
 	logChannelDelete(channelDelete)
 
 	_, err = client.Rest.CreateMessage(logChannelID, channelDeleteMsg)
@@ -178,7 +178,7 @@ func logMsgSend(msgSend *events.GuildMessageCreate) {
 // Write message edit event to file
 func logMsgEdit(msgEdit *events.GuildMessageUpdate) {
 	messageNew := msgEdit.Message.Content
-	messageOld := msgEdit.OldMessage.Content // returning a blank string
+	messageOld := msgEdit.OldMessage.ReferencedMessage.Content
 	messageID := msgEdit.MessageID
 	// if messageNew = "", dont send
 	authorID := msgEdit.Message.Author.ID

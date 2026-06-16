@@ -120,17 +120,21 @@ func getLeetifyStats(steamID string) (LeetifyProfile, error) {
 	return profile, nil
 }
 
+func loopFunc() {
+	steamIDList := linkGetAllSteamIds()
+	for _, steamID := range steamIDList {
+		playerstats, _ := getLeetifyStats(steamID)
+		// looped stat functions go here
+
+		csMatchListener(playerstats)
+		updatePremierRatingRole(playerstats)
+	}
+}
+
 // starts with bot and runs stats functions every 5 mins
-
 func initLeetifyStatsLoop() {
+	loopFunc()
 	for range time.Tick(time.Minute * 5) {
-		steamIDList := linkGetAllSteamIds()
-		for _, steamID := range steamIDList {
-			playerstats, _ := getLeetifyStats(steamID)
-			// looped stat functions go here
-
-			csMatchListener(playerstats)
-			updatePremierRatingRole(playerstats)
-		}
+		loopFunc()
 	}
 }

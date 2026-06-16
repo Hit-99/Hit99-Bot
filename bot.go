@@ -41,10 +41,17 @@ func main() {
 		bot.WithEventListenerFunc(autorole),
 		bot.WithEventListenerFunc(updateReactionRoles),
 		bot.WithEventListenerFunc(userJoinEvent),
-		// bot.WithEventListenerFunc(userLeaveEvent),
+		bot.WithEventListenerFunc(userLeaveEvent),
 		bot.WithEventListenerFunc(userMsgSendEvent),
-		// bot.WithEventListenerFunc(userMsgDelEvent),
 		bot.WithEventListenerFunc(userMsgEditEvent),
+		bot.WithEventListenerFunc(userMsgDelEvent),
+		// bot.WithEventListenerFunc(userMsgReplyEvent),
+		bot.WithEventListenerFunc(roleCreateEvent),
+		bot.WithEventListenerFunc(roleUpdateEvent),
+		bot.WithEventListenerFunc(roleDeleteEvent),
+		bot.WithEventListenerFunc(channelCreateEvent),
+		bot.WithEventListenerFunc(channelUpdateEvent),
+		bot.WithEventListenerFunc(channelDeleteEvent),
 	)
 	if err != nil {
 		fmt.Printf("error while building bot instance: %s\n", err)
@@ -85,6 +92,6 @@ func onready(event *events.Ready) {
 	initReactionRoles()
 	fmt.Println("initialized reaction roles") // debug
 	go initLeetifyStatsLoop()
-	fmt.Println("initialized stats functions") // debug
+	fmt.Println("initialized looped functions") // debug
 
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/disgoorg/snowflake/v2"
 	"github.com/fluxergo/fluxergo/fluxer"
@@ -28,15 +29,16 @@ func getPremierRatingHandler(author *fluxer.User, message *fluxer.Message, args 
 func updatePremierRatingRole(playerstats LeetifyProfile) error {
 	premierRating, err := playerstats.Ranks.Premier.Int64()
 	if err != nil {
-		return fmt.Errorf("error getting premier rating: %w", err)
+		premierRating = 0
 	}
+
 	roleID := getRoleIDForRating(premierRating)
 	fluxerID, err := getFluxerIDFromSteamID(playerstats.SteamID)
 	userID := snowflake.MustParse(fluxerID)
 	if err != nil {
 		return fmt.Errorf("error getting fluxerID: %w", err)
 	}
-	guildID := snowflake.MustParse("1473790485412413471")
+	guildID := snowflake.MustParse(os.Getenv("FLUXER_GUILD_ID"))
 	setPremierRatingRole(guildID, userID, roleID)
 	return err
 
