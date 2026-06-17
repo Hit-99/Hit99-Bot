@@ -9,8 +9,7 @@ import (
 	dbot "github.com/disgoorg/disgo/bot"
 	"github.com/disgoorg/disgo/discord"
 	devents "github.com/disgoorg/disgo/events"
-	dgateway "github.com/disgoorg/disgo/gateway"
-	"github.com/disgoorg/snowflake/v2"
+	"github.com/disgoorg/disgo/gateway"
 )
 
 var dClient *dbot.Client
@@ -18,13 +17,27 @@ var dClient *dbot.Client
 func initDiscord() *dbot.Client {
 	dClient, err = disgo.New(os.Getenv("DISCORD_BOT_TOKEN"),
 		dbot.WithGatewayConfigOpts(
-			dgateway.WithIntents(
-				dgateway.IntentGuildMessages,
-				dgateway.IntentMessageContent,
+			gateway.WithIntents(
+				gateway.IntentGuilds|
+					gateway.IntentGuildMessages|
+					gateway.IntentMessageContent|
+					gateway.IntentGuildMessageReactions|
+					gateway.IntentGuildMembers,
+			),
+			gateway.WithPresenceOpts(
+				gateway.WithOnlineStatus(discord.OnlineStatusOnline),
 			),
 		),
 		dbot.WithEventListenerFunc(dOnMessageCreate),
 		dbot.WithEventListenerFunc(dOnReady),
+		dbot.WithEventListenerFunc(dcommands),
+		dbot.WithEventListenerFunc(dAutorole),
+		dbot.WithEventListenerFunc(dUpdateReactionRoles),
+		dbot.WithEventListenerFunc(dUserJoinEvent),
+		// bot.WithEventListenerFunc(dUserLeaveEvent),
+		dbot.WithEventListenerFunc(dUserMsgSendEvent),
+		// bot.WithEventListenerFunc(dUserMsgDelEvent),
+		dbot.WithEventListenerFunc(dUserMsgEditEvent),
 	)
 
 	if err != nil {
@@ -38,21 +51,6 @@ func initDiscord() *dbot.Client {
 	}
 
 	return dClient
-
-}
-
-func dOnReady(event *devents.Ready) {
-
-	dlogid := snowflake.MustParse(os.Getenv("DLOG_CHANNEL_ID"))
-
-	dstartmsg := discord.NewMessageCreate().WithContent("Hit-99 Bot has started!")
-
-	_, err = dClient.Rest.CreateMessage(dlogid, dstartmsg)
-	if err != nil {
-		fmt.Printf("error while creating message: %s\n", err)
-	}
-
-	fmt.Println("the discord api works!!!")
 
 }
 

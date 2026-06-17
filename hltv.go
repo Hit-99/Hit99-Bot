@@ -11,4 +11,4 @@ get player stats
 get team info (rosters, events, etc)
 */
 
-// https://hltv-api.vercel.app/
+// hltv unofficial apis too unreliable. maybe use gotv, esl, or blast?

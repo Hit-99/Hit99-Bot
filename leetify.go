@@ -90,8 +90,11 @@ type LeetifyProfile struct {
 }
 
 // gets all leetify stats
-
 func getLeetifyStats(steamID string) (LeetifyProfile, error) {
+
+	if steamID == "" {
+		return LeetifyProfile{}, fmt.Errorf("empty steamID")
+	}
 
 	url := fmt.Sprintf(
 		"https://api-public.cs-prod.leetify.com/v3/profile?steam64_id=%s",
@@ -111,7 +114,17 @@ func getLeetifyStats(steamID string) (LeetifyProfile, error) {
 		return LeetifyProfile{}, err
 	}
 
+	if resp.StatusCode == http.StatusNotFound {
+		return LeetifyProfile{}, nil
+	}
+	if resp.StatusCode != http.StatusOK {
+		fmt.Printf("leetify returned status %d\n", resp.StatusCode)
+		fmt.Println(string(body))
+		return LeetifyProfile{}, fmt.Errorf("non-200 response")
+	}
+
 	var profile LeetifyProfile
+
 	err = json.Unmarshal(body, &profile)
 	if err != nil {
 		fmt.Printf("error while unmarshalling json from leetify: %s\n", err)
@@ -121,13 +134,23 @@ func getLeetifyStats(steamID string) (LeetifyProfile, error) {
 }
 
 func loopFunc() {
-	steamIDList := linkGetAllSteamIds()
-	for _, steamID := range steamIDList {
+	fSteamIDList := linkGetAllSteamIds()
+	dSteamIDList := dLinkGetAllSteamIds()
+
+	for _, steamID := range fSteamIDList {
 		playerstats, _ := getLeetifyStats(steamID)
 		// looped stat functions go here
 
 		csMatchListener(playerstats)
 		updatePremierRatingRole(playerstats)
+	}
+
+	for _, steamID := range dSteamIDList {
+		playerstats, _ := getLeetifyStats(steamID)
+		// looped stat functions go here
+
+		csMatchListener(playerstats)
+		dUpdatePremierRatingRole(playerstats)
 	}
 }
 

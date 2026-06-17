@@ -37,7 +37,7 @@ func init() {
 
 func initReactionRoles() {
 
-	client.Rest.RemoveAllReactions(roleChannel, reactionMsgID)
+	fClient.Rest.RemoveAllReactions(roleChannel, reactionMsgID)
 	addRoleMsgReactions(roleChannel, reactionMsgID)
 
 }
@@ -58,7 +58,7 @@ func addRoleMsgReactions(channelID snowflake.ID, messageID snowflake.ID) {
 }
 
 func addReactionToMessage(channelID snowflake.ID, messageID snowflake.ID, emojiName string) error {
-	err := client.Rest.AddReaction(channelID, messageID, emojiName)
+	err := fClient.Rest.AddReaction(channelID, messageID, emojiName)
 
 	return err
 }
@@ -77,7 +77,7 @@ func updateReactionRoles(event *events.MessageReactionAdd) {
 	// fmt.Println(event.Emoji.String())
 	// fmt.Println(event.Emoji.Name)
 
-	if event.UserID == client.ID() {
+	if event.UserID == fClient.ID() {
 		return
 	}
 
@@ -85,18 +85,16 @@ func updateReactionRoles(event *events.MessageReactionAdd) {
 		return
 	}
 	if !containsEmoji(RoleReactionIDs, event.Emoji.Name) {
-		client.Rest.RemoveUserReaction(roleChannel, reactionMsgID, event.Emoji.Name, event.Member.User.ID)
+		fClient.Rest.RemoveUserReaction(roleChannel, reactionMsgID, event.Emoji.Name, event.Member.User.ID)
 		return
-
 	}
 
 	toggleRoleForUser(event.Member.User.ID, snowflake.MustParse(RoleReactionIDs[event.Emoji.Name]), *event.GuildID)
-	client.Rest.RemoveUserReaction(roleChannel, reactionMsgID, event.Emoji.Name, event.Member.User.ID)
+	fClient.Rest.RemoveUserReaction(roleChannel, reactionMsgID, event.Emoji.Name, event.Member.User.ID)
 	if err != nil {
 		fmt.Println("error adding role to user:", err)
 		return
 	}
-
 }
 
 func toggleRoleForUser(userID snowflake.ID, roleID snowflake.ID, guildID snowflake.ID) error {
@@ -107,14 +105,14 @@ func toggleRoleForUser(userID snowflake.ID, roleID snowflake.ID, guildID snowfla
 	}
 	if doesUserHasRole {
 		fmt.Println("user has role, removing")
-		return client.Rest.RemoveMemberRole(guildID, userID, roleID)
+		return fClient.Rest.RemoveMemberRole(guildID, userID, roleID)
 	}
 	fmt.Println("user does not have role, adding")
-	return client.Rest.AddMemberRole(guildID, userID, roleID)
+	return fClient.Rest.AddMemberRole(guildID, userID, roleID)
 }
 
 func userHasRole(guidID snowflake.ID, userID snowflake.ID, roleID snowflake.ID) (bool, error) {
-	member, err := client.Rest.GetMember(guidID, userID)
+	member, err := fClient.Rest.GetMember(guidID, userID)
 	if err != nil {
 		return false, err
 	}

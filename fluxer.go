@@ -5,13 +5,9 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/signal"
-	"syscall"
 
-	"github.com/disgoorg/snowflake/v2"
 	"github.com/fluxergo/fluxergo"
 	"github.com/fluxergo/fluxergo/bot"
-	"github.com/fluxergo/fluxergo/events"
 	"github.com/fluxergo/fluxergo/fluxer"
 	"github.com/fluxergo/fluxergo/gateway"
 	"github.com/joho/godotenv"
@@ -25,18 +21,15 @@ func init() {
 	}
 }
 
-var client *bot.Client
-var err error
+var fClient *bot.Client
 
-func main() {
-	fmt.Println("Starting...")
-
-	client, err = fluxergo.New(os.Getenv("FLUXER_BOT_TOKEN"),
+func initFluxer() *bot.Client {
+	fClient, err = fluxergo.New(os.Getenv("FLUXER_BOT_TOKEN"),
 		bot.WithGatewayConfigOpts(
 			gateway.WithPresenceOpts(
 				gateway.WithOnlineStatus(fluxer.OnlineStatusOnline)),
 		),
-		bot.WithEventListenerFunc(onready),
+		bot.WithEventListenerFunc(fOnReady),
 		bot.WithEventListenerFunc(commands),
 		bot.WithEventListenerFunc(autorole),
 		bot.WithEventListenerFunc(updateReactionRoles),
@@ -55,43 +48,12 @@ func main() {
 	)
 	if err != nil {
 		fmt.Printf("error while building bot instance: %s\n", err)
-		return
+		return nil
 	}
 
-	err = client.OpenGateway(context.TODO())
+	err = fClient.OpenGateway(context.TODO())
 	if err != nil {
 		fmt.Printf("error while connecting to fluxer: %s\n", err)
 	}
-
-	dClient := initDiscord()
-	fmt.Println("initialized discord bridge") // debug
-
-	defer client.Close(context.TODO())
-	defer dClient.Close(context.TODO())
-
-	s := make(chan os.Signal, 1)
-	signal.Notify(s, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
-	<-s
-}
-
-func onready(event *events.Ready) {
-
-	logid := snowflake.MustParse(os.Getenv("LOG_CHANNEL_ID"))
-
-	startmsg := fluxer.NewMessageCreate().WithContent("Hit-99 Bot has started!")
-
-	_, err = client.Rest.CreateMessage(logid, startmsg)
-	if err != nil {
-		fmt.Printf("error while creating message: %s\n", err)
-	}
-
-	fmt.Println("the fluxer api works!!!")
-
-	initCommands()
-	fmt.Println("initialized commands") // debug
-	initReactionRoles()
-	fmt.Println("initialized reaction roles") // debug
-	go initLeetifyStatsLoop()
-	fmt.Println("initialized looped functions") // debug
-
+	return fClient
 }

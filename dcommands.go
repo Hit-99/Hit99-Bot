@@ -6,51 +6,47 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/disgoorg/disgo/discord"
+	devents "github.com/disgoorg/disgo/events"
 	"github.com/disgoorg/snowflake/v2"
-	"github.com/fluxergo/fluxergo/events"
-	"github.com/fluxergo/fluxergo/fluxer"
 )
 
 var (
-	prefix        string
-	prefixPattern *regexp.Regexp
+	dPrefix        string
+	dPrefixPattern *regexp.Regexp
 )
 
-type Command struct {
+type dCommand struct {
 	Name    string
-	Handler func(caller *fluxer.User, message *fluxer.Message, args []string) error
+	Handler func(caller *discord.User, message *discord.Message, args []string) error
 }
 
-var Commands = []Command{
+var dCommands = []dCommand{
 	{
 		Name:    "ping",
-		Handler: pingpong, //pong
+		Handler: dPingPong, //pong
 	},
 	{
 		Name:    "rating",
-		Handler: getPremierRatingHandler, //get premier rating, return to user
+		Handler: dGetPremierRatingHandler, //get premier rating, return to user
 	},
 	{
 		Name:    "link",
-		Handler: linkSteamHandler, // link steam and fluxer ids
+		Handler: dLinkSteamHandler, // link steam and discord ids
 	},
 	{
 		Name:    "getroles",
-		Handler: getallroleshandler,
-	},
-	{
-		Name:    "webhooktest",
-		Handler: webhooktesthandler,
+		Handler: dGetAllRolesHandler,
 	},
 	{
 		Name:    "stats",
-		Handler: getStatsHandler, //get basic stats, return to user
+		Handler: dGetStatsHandler, //get basic stats, return to user
 	},
 }
 
-func getallroleshandler(caller *fluxer.User, message *fluxer.Message, args []string) error {
+func dGetAllRolesHandler(caller *discord.User, message *discord.Message, args []string) error {
 
-	roles, _ := fClient.Rest.GetRoles(*message.GuildID)
+	roles, _ := dClient.Rest.GetRoles(*message.GuildID)
 	for _, role := range roles {
 		fmt.Printf("Role: %s, ID: %s\n", role.Name, role.ID)
 
@@ -58,10 +54,10 @@ func getallroleshandler(caller *fluxer.User, message *fluxer.Message, args []str
 	return nil
 }
 
-func pingpong(caller *fluxer.User, message *fluxer.Message, args []string) error {
+func dPingPong(caller *discord.User, message *discord.Message, args []string) error {
 
-	pongmsg := fluxer.NewMessageCreate().WithContent("pong")
-	_, err = fClient.Rest.CreateMessage(message.ChannelID, pongmsg)
+	pongmsg := discord.NewMessageCreate().WithContent("pong")
+	_, err = dClient.Rest.CreateMessage(message.ChannelID, pongmsg)
 
 	if err != nil {
 		return fmt.Errorf("error sending message: %w", err)
@@ -70,7 +66,7 @@ func pingpong(caller *fluxer.User, message *fluxer.Message, args []string) error
 	return nil
 }
 
-func initCommands() {
+func dInitCommands() {
 	prefix = os.Getenv("PREFIX")
 	if prefix == "" {
 		prefix = "!"
@@ -79,8 +75,8 @@ func initCommands() {
 	prefixPattern = regexp.MustCompile(`(?i)^\s*` + regexp.QuoteMeta(prefix) + `\s*`)
 }
 
-func findCommmand(name string) *Command {
-	for _, command := range Commands {
+func dFindCommmand(name string) *dCommand {
+	for _, command := range dCommands {
 		if name == command.Name {
 			return &command
 		}
@@ -88,11 +84,10 @@ func findCommmand(name string) *Command {
 	return nil
 }
 
-func commands(event *events.MessageCreate) {
-
+func dcommands(event *devents.MessageCreate) {
 	message := &event.Message
 
-	if message.Author.ID == fClient.ID() {
+	if message.Author.ID == dClient.ID() {
 		return
 	}
 
@@ -112,7 +107,7 @@ func commands(event *events.MessageCreate) {
 		commandName := strings.ToLower(args[0])
 		// getRating
 
-		command := findCommmand(commandName)
+		command := dFindCommmand(commandName)
 		// 	{
 		// 	Name:    "getRating",
 		// 	Handler: getRatingHandler, //get rating, return to user
@@ -120,16 +115,16 @@ func commands(event *events.MessageCreate) {
 
 		if command == nil {
 
-			cmdnotfounderrmsg := fluxer.NewMessageCreate().WithContent("cmd not found")
+			cmdnotfounderrmsg := discord.NewMessageCreate().WithContent("cmd not found")
 
-			_, err = fClient.Rest.CreateMessage(message.ChannelID, cmdnotfounderrmsg)
+			_, err = dClient.Rest.CreateMessage(message.ChannelID, cmdnotfounderrmsg)
 			if err != nil {
 				fmt.Printf("error while finding command: %s\n", err)
 			}
 			return
 		}
 
-		author, err := getUserByID(message.Author.ID)
+		author, err := dGetUserByID(message.Author.ID)
 		if err != nil {
 			return
 		}
@@ -138,11 +133,14 @@ func commands(event *events.MessageCreate) {
 		if err != nil {
 			fmt.Printf("error while executing command: %s\n", err)
 		}
+
 	}
+
 }
 
-func getUserByID(userID snowflake.ID) (*fluxer.User, error) {
-	user, err := fClient.Rest.GetUser(userID)
+func dGetUserByID(userID snowflake.ID) (*discord.User, error) {
+	user, err := dClient.Rest.GetUser(userID)
+	// throwing errors when users run commands
 	if err != nil {
 		fmt.Printf("error while fetching user: %s\n", err)
 		return nil, err

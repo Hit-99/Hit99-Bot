@@ -11,26 +11,37 @@ import (
 
 var db *sql.DB
 
+type FluxerSteamPair struct {
+	FluxerID string
+	SteamID  string
+}
+
+type DiscordSteamPair struct {
+	DiscordID string
+	SteamID   string
+}
+
 func init() {
 	db, err = sql.Open("sqlite", "./hit99.db")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// creates link table if it doesnt exist
+	// creates fluxerLink table if it doesnt exist
 	steamToFluxerLinkSchema := `
-	CREATE TABLE IF NOT EXISTS link (
+	CREATE TABLE IF NOT EXISTS fluxerLink (
 		fluxerID TEXT PRIMARY KEY,
 		steamID TEXT NOT NULL
 	);
 	`
 
-	_, err = db.Exec(steamToFluxerLinkSchema)
-	if err != nil {
-		log.Printf("%q: %s\n", err, steamToFluxerLinkSchema)
-		log.Println("Unable to create link table")
-		panic(err)
-	}
+	// creates discordLink table if it doesnt exist
+	steamToDiscordLinkSchema := `
+	CREATE TABLE IF NOT EXISTS discordLink (
+		discordID TEXT PRIMARY KEY,
+		steamID TEXT NOT NULL
+	);
+	`
 
 	// creates matches table if it doesnt exist
 	steamAndMatchesSchema := `
@@ -41,6 +52,20 @@ func init() {
 	);
 	`
 
+	_, err = db.Exec(steamToFluxerLinkSchema)
+	if err != nil {
+		log.Printf("%q: %s\n", err, steamToFluxerLinkSchema)
+		log.Println("Unable to create fluxerLink table")
+		panic(err)
+	}
+
+	_, err = db.Exec(steamToDiscordLinkSchema)
+	if err != nil {
+		log.Printf("%q: %s\n", err, steamToDiscordLinkSchema)
+		log.Println("Unable to create discordLink table")
+		panic(err)
+	}
+
 	_, err = db.Exec(steamAndMatchesSchema)
 	if err != nil {
 		log.Printf("%q: %s\n", err, steamAndMatchesSchema)
@@ -49,10 +74,10 @@ func init() {
 	}
 }
 
-// checks if fluxer ID exists in link table
-func linkContainsID(fluxerID snowflake.ID) bool {
+// checks if fluxer ID exists in fluxerLink table
+func linkContainsFluxerID(fluxerID snowflake.ID) bool {
 	var existing string
-	err := db.QueryRow("SELECT fluxerID FROM link WHERE fluxerID = ?", fluxerID.String()).Scan(&existing)
+	err := db.QueryRow("SELECT fluxerID FROM fluxerLink WHERE fluxerID = ?", fluxerID.String()).Scan(&existing)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return false
@@ -62,28 +87,44 @@ func linkContainsID(fluxerID snowflake.ID) bool {
 	return true
 }
 
-// creates an entry in the link table
+// checks if discord ID exists in discordLink table
+func linkContainsDiscordID(discordID snowflake.ID) bool {
+	var existing string
+	err := db.QueryRow("SELECT discordID FROM discordLink WHERE discordID = ?", discordID.String()).Scan(&existing)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return false
+		}
+		log.Fatal(err)
+	}
+	return true
+}
+
+// creates an entry in the fluxerLink table
 func linkCreateEntry(fluxerID snowflake.ID, steamID string) {
-	_, err := db.Exec("INSERT INTO link (fluxerID, steamID) VALUES (?, ?)", fluxerID.String(), steamID)
+	_, err := db.Exec("INSERT INTO fluxerLink (fluxerID, steamID) VALUES (?, ?)", fluxerID.String(), steamID)
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
-type FluxerSteamPair struct {
-	FluxerID string
-	SteamID  string
+// creates an entry in the discordLink table
+func dLinkCreateEntry(discordID snowflake.ID, steamID string) {
+	_, err := db.Exec("INSERT INTO discordLink (discordID, steamID) VALUES (?, ?)", discordID.String(), steamID)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
-// get link table entries
+// get fluxerLink table entries
 func linkGetEntries() []FluxerSteamPair {
-	rows, err := db.Query("SELECT fluxerID, steamID FROM link")
+	rows, err := db.Query("SELECT fluxerID, steamID FROM fluxerLink")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer rows.Close()
 
-	fmt.Println("Rows in link table:")
+	fmt.Println("Rows in fluxerLink table:")
 
 	var entries []FluxerSteamPair // create the array outside of the loop
 
@@ -99,14 +140,41 @@ func linkGetEntries() []FluxerSteamPair {
 		fmt.Printf("fluxerID=%s steamID=%s\n", fluxerID, steamID)
 
 	}
-	return entries // return the array
+	return entries
 }
 
-// gets all steamIDs in link table
+// get discordLink table entries
+func dLinkGetEntries() []DiscordSteamPair {
+	rows, err := db.Query("SELECT discordID, steamID FROM discordLink")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	fmt.Println("Rows in discordLink table:")
+
+	var entries []DiscordSteamPair // create the array outside of the loop
+
+	for rows.Next() {
+		var discordID, steamID string
+
+		if err := rows.Scan(&discordID, &steamID); err != nil { // get your values
+			log.Fatal(err)
+		}
+
+		entries = append(entries, DiscordSteamPair{DiscordID: discordID, SteamID: steamID}) // append to the array
+
+		fmt.Printf("discordID=%s steamID=%s\n", discordID, steamID)
+
+	}
+	return entries
+}
+
+// gets all steamIDs in fluxerLink table
 func linkGetAllSteamIds() []string {
 	var entries []string
 
-	rows, err := db.Query("SELECT steamID FROM link")
+	rows, err := db.Query("SELECT steamID FROM fluxerLink")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -121,7 +189,28 @@ func linkGetAllSteamIds() []string {
 
 		entries = append(entries, steamID) // append to the array
 	}
+	return entries
+}
 
+// gets all steamIDs in discordLink table
+func dLinkGetAllSteamIds() []string {
+	var entries []string
+
+	rows, err := db.Query("SELECT steamID FROM discordLink")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var steamID string
+
+		if err := rows.Scan(&steamID); err != nil { // get your values
+			log.Fatal(err)
+		}
+
+		entries = append(entries, steamID) // append to the array
+	}
 	return entries
 }
 
@@ -161,7 +250,7 @@ func matchesCreateEntry(steamID string, matchID string) {
 
 func getFluxerIDFromSteamID(steamID string) (string, error) {
 	var fluxerID string
-	err := db.QueryRow("SELECT fluxerID from link where steamID = ?", steamID).Scan(&fluxerID)
+	err := db.QueryRow("SELECT fluxerID from fluxerLink where steamID = ?", steamID).Scan(&fluxerID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return "", nil
@@ -169,6 +258,42 @@ func getFluxerIDFromSteamID(steamID string) (string, error) {
 		log.Fatal(err)
 	}
 	return fluxerID, nil
+}
+
+func getDiscordIDFromSteamID(steamID string) (string, error) {
+	var discordID string
+	err := db.QueryRow("SELECT discordID from discordLink where steamID = ?", steamID).Scan(&discordID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return "", nil
+		}
+		log.Fatal(err)
+	}
+	return discordID, nil
+}
+
+func getSteamIDFromFluxerID(fluxerID string) (string, error) {
+	var steamID string
+	err := db.QueryRow("SELECT steamID from fluxerLink where fluxerID = ?", fluxerID).Scan(&steamID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return "", nil
+		}
+		log.Fatal(err)
+	}
+	return steamID, nil
+}
+
+func getSteamIDFromDiscordID(discordID string) (string, error) {
+	var steamID string
+	err := db.QueryRow("SELECT steamID from discordLink where discordID = ?", discordID).Scan(&steamID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return "", nil
+		}
+		log.Fatal(err)
+	}
+	return steamID, nil
 }
 
 func ifMatchExistsForUser(steamID string, matchID string) (bool, error) {

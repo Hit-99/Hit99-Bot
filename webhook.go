@@ -37,7 +37,7 @@ func webhooktesthandler(caller *fluxer.User, message *fluxer.Message, args []str
 		AvatarURL: fixAvatarURL(*caller.AvatarURL()),
 	}
 
-	_, err = client.Rest.CreateWebhookMessage(snowflake.ID(1474820699636891678), "GqNsEkoR4ia3Vv64oTbk93dp5sV1qL4QS00XcCDySMxYXMuwLu48X99muw5KU41a", webhookmsg, rest.CreateWebhookMessageParams{})
+	_, err = fClient.Rest.CreateWebhookMessage(snowflake.ID(1474820699636891678), "GqNsEkoR4ia3Vv64oTbk93dp5sV1qL4QS00XcCDySMxYXMuwLu48X99muw5KU41a", webhookmsg, rest.CreateWebhookMessageParams{})
 
 	return err
 }
@@ -67,6 +67,6 @@ func sendFluxerWebhookBridgeMessage(discordChannelID string, discordMsgContent s
 
 	}
 
-	_, err = client.Rest.CreateWebhookMessage(fluxerDiscordBridge[discordChannelID], fluxerWebhookTokens[fluxerDiscordBridge[discordChannelID]], webhookmsg, rest.CreateWebhookMessageParams{})
+	_, err = fClient.Rest.CreateWebhookMessage(fluxerDiscordBridge[discordChannelID], fluxerWebhookTokens[fluxerDiscordBridge[discordChannelID]], webhookmsg, rest.CreateWebhookMessageParams{})
 	return err
 }

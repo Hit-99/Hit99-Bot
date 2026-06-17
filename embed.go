@@ -5,6 +5,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/disgoorg/disgo/discord"
+	devents "github.com/disgoorg/disgo/events"
 	"github.com/disgoorg/snowflake/v2"
 	"github.com/fluxergo/fluxergo/events"
 	"github.com/fluxergo/fluxergo/fluxer"
@@ -32,7 +34,7 @@ func delMsgEmbed(channelID snowflake.ID, embedMsg *events.GuildMessageDelete) er
 		Timestamp:   &embedMsg.Message.CreatedAt,
 	}
 	embedOut := fluxer.NewMessageCreate().WithContent("").WithEmbeds(embed)
-	_, err = client.Rest.CreateMessage(channelID, embedOut)
+	_, err = fClient.Rest.CreateMessage(channelID, embedOut)
 	return err
 }
 
@@ -47,7 +49,22 @@ func editMsgEmbed(channelID snowflake.ID, embedMsg *events.GuildMessageUpdate) e
 		Timestamp:   &embedMsg.Message.CreatedAt,
 	}
 	embedOut := fluxer.NewMessageCreate().WithContent("").WithEmbeds(embed)
-	_, err = client.Rest.CreateMessage(channelID, embedOut)
+	_, err = fClient.Rest.CreateMessage(channelID, embedOut)
+	return err
+}
+
+func dEditMsgEmbed(channelID snowflake.ID, embedMsg *devents.GuildMessageUpdate) error {
+	embed := discord.Embed{
+		Author: &discord.EmbedAuthor{
+			Name:    embedMsg.Message.Author.Username,
+			IconURL: *embedMsg.Message.Author.AvatarURL(),
+		},
+		Color:       0xf44336,
+		Description: "Before: " + embedMsg.OldMessage.Content + "After: " + embedMsg.Message.Content,
+		Timestamp:   &embedMsg.Message.CreatedAt,
+	}
+	embedOut := discord.NewMessageCreate().WithContent("").WithEmbeds(embed)
+	_, err = dClient.Rest.CreateMessage(channelID, embedOut)
 	return err
 }
 
@@ -131,6 +148,90 @@ func matchStatsEmbed(channelID snowflake.ID, matchStats LeetifyProfile, matchID 
 		},
 	}
 	embedOut := fluxer.NewMessageCreate().WithContent("").WithEmbeds(embed)
-	_, err = client.Rest.CreateMessage(channelID, embedOut)
+	_, err = fClient.Rest.CreateMessage(channelID, embedOut)
+	return err
+}
+
+func dMatchStatsEmbed(channelID snowflake.ID, matchStats LeetifyProfile, matchID string) error {
+	var recentMatch int
+	for i := range matchStats.RecentMatches {
+		if matchStats.RecentMatches[i].ID == matchID {
+			recentMatch = i
+		}
+	}
+	switch matchStats.RecentMatches[recentMatch].Outcome {
+	case "loss":
+		embedColor = colorMatchLoss
+	case "win":
+		embedColor = colorMatchWin
+	default:
+		embedColor = colorMatchOther
+	}
+	finishedAtStr := matchStats.RecentMatches[recentMatch].FinshedAt
+	parsedTime, err := time.Parse(time.RFC3339, finishedAtStr)
+	if err != nil {
+		return err
+	}
+
+	leetifyReformat, _ := matchStats.RecentMatches[recentMatch].LeetifyRating.Float64()
+	playerRank, _ := matchStats.RecentMatches[recentMatch].Rank.Int64()
+	var playerRankName string
+	var playerRankMap = map[string]string{
+		"0":  "Unranked",
+		"1":  "Silver 1",
+		"2":  "Silver II",
+		"3":  "Silver III",
+		"4":  "Silver IV",
+		"5":  "Silver Elite",
+		"6":  "Silver Elite Master",
+		"7":  "Gold Nova I",
+		"8":  "Gold Nova II",
+		"9":  "Gold Nova III",
+		"10": "Gold Nova Master",
+		"11": "Master Guardian I",
+		"12": "Master Guardian II",
+		"13": "Master Guardian Elite",
+		"14": "Destinguished Master Guardian",
+		"15": "Legendary Eagle",
+		"16": "Legendary Eagle Master",
+		"17": "Supreme Master First Class",
+		"18": "The Global Elite",
+	}
+
+	if playerRank < 1000 {
+		playerRankName = playerRankMap[strconv.Itoa(int(playerRank))]
+	} else {
+		playerRankName = strconv.Itoa(int(playerRank))
+
+	}
+
+	embed := discord.Embed{
+		Title: "View on Leetify",
+		Color: embedColor,
+		Author: &discord.EmbedAuthor{
+			Name: fmt.Sprintf("%s  %s  ->  %s", matchStats.RecentMatches[recentMatch].Score, matchStats.RecentMatches[recentMatch].MapName, matchStats.UserName),
+		},
+		Description: fmt.Sprintf("**Rank:** %s\n**Leetify Rating:** %.2f\n**Preaim:** %s\n**Reaction Time (MS):** %s\n**Accuracy Enemy Spotted:** %s\n**Accuracy Head:** %s\n**Spray Accuracy:** %s",
+			playerRankName,
+			(leetifyReformat * 100),
+			matchStats.RecentMatches[recentMatch].Preaim,
+			matchStats.RecentMatches[recentMatch].ReactionTimeMS,
+			matchStats.RecentMatches[recentMatch].AccuracyEnemySpotted,
+			matchStats.RecentMatches[recentMatch].AccuracyHead,
+			matchStats.RecentMatches[recentMatch].SprayAccuracy),
+		Timestamp: &parsedTime,
+		URL:       fmt.Sprintf("https://leetify.com/app/match-details/%s/your-match", matchStats.RecentMatches[recentMatch].ID),
+		Thumbnail: &discord.EmbedResource{
+			URL:    "https://cloud.hy7.dev/apps/files_sharing/publicpreview/dooMgMXNSf3Q4r2?file=/&fileId=4110&x=1920&y=1080&a=true&etag=535ca46af95fa6a0cca81a465677911d",
+			Height: 115,
+			Width:  270,
+		},
+		Footer: &discord.EmbedFooter{
+			Text:    matchStats.RecentMatches[recentMatch].ID,
+			IconURL: "https://fluxerusercontent.com/attachments/1473793058206990390/1475614229764805051/Artboard_1.png",
+		},
+	}
+	embedOut := discord.NewMessageCreate().WithContent("").WithEmbeds(embed)
+	_, err = dClient.Rest.CreateMessage(channelID, embedOut)
 	return err
 }
