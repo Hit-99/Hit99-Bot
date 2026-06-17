@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -101,11 +102,21 @@ func getLeetifyStats(steamID string) (LeetifyProfile, error) {
 		steamID,
 	)
 
-	resp, err := http.Get(url)
+	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		fmt.Printf("error while getting response from leetify: %s\n", err)
 		return LeetifyProfile{}, err
 	}
+
+	req.Header.Set("leetify_key", os.Getenv("LEETIFY_API_KEY"))
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Printf("error while getting response from leetify: %s\n", err)
+		return LeetifyProfile{}, err
+	}
+
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
@@ -115,7 +126,7 @@ func getLeetifyStats(steamID string) (LeetifyProfile, error) {
 	}
 
 	if resp.StatusCode == http.StatusNotFound {
-		return LeetifyProfile{}, nil
+		return LeetifyProfile{}, fmt.Errorf("leetify profile not found")
 	}
 	if resp.StatusCode != http.StatusOK {
 		fmt.Printf("leetify returned status %d\n", resp.StatusCode)

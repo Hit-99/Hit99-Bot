@@ -111,7 +111,7 @@ func dUpdatePremierRatingRole(playerstats LeetifyProfile) error {
 		return fmt.Errorf("error getting premier rating: %w", err)
 	}
 
-	roleID := getRoleIDForRating(premierRating)
+	roleID := dGetRoleIDForRating(premierRating)
 	discordID, err := getDiscordIDFromSteamID(playerstats.SteamID)
 
 	if err != nil {
@@ -136,7 +136,7 @@ func dUpdatePremierRatingRole(playerstats LeetifyProfile) error {
 		for _, rating := range ratings {
 			ratingRole := snowflake.MustParse(rating.Role)
 			if r == ratingRole {
-				err := removePremierRatingRole(guildID, userID, ratingRole)
+				err := dRemovePremierRatingRole(guildID, userID, ratingRole)
 				if err != nil {
 					fmt.Println("Failed removing role:", err)
 				}
