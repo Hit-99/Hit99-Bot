@@ -93,6 +93,8 @@ type LeetifyProfile struct {
 // gets all leetify stats
 func getLeetifyStats(steamID string) (LeetifyProfile, error) {
 
+	time.Sleep(1 * time.Second)
+
 	if steamID == "" {
 		return LeetifyProfile{}, fmt.Errorf("empty steamID")
 	}
@@ -108,7 +110,7 @@ func getLeetifyStats(steamID string) (LeetifyProfile, error) {
 		return LeetifyProfile{}, err
 	}
 
-	req.Header.Set("leetify_key", os.Getenv("LEETIFY_API_KEY"))
+	req.Header.Set("Authorization", "Bearer "+os.Getenv("LEETIFY_API_KEY"))
 
 	client := &http.Client{}
 	resp, err := client.Do(req)

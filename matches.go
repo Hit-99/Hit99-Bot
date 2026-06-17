@@ -20,7 +20,7 @@ func csMatchListener(playerstats LeetifyProfile) {
 		recentMatch := playerstats.RecentMatches[0].ID
 		steamID = playerstats.SteamID
 
-		time.Sleep(1000000000)
+		time.Sleep(1 * time.Second)
 
 		ifMatchExist, _ := ifMatchExistsForUser(steamID, matchID)
 		if !ifMatchExist {
