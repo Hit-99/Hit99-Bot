@@ -165,6 +165,8 @@ func loopFunc() {
 		csMatchListener(playerstats)
 		dUpdatePremierRatingRole(playerstats)
 	}
+
+	// checks all steamIDs, even if there are duplicates between the two lists
 }
 
 // starts with bot and runs stats functions every 5 mins

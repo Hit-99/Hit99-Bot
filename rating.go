@@ -34,7 +34,6 @@ func getPremierRatingHandler(author *fluxer.User, message *fluxer.Message, args 
 
 // get steamid and return the rating (discord)
 func dGetPremierRatingHandler(author *discord.User, message *discord.Message, args []string) error {
-
 	steamID, err := getSteamIDFromDiscordID(author.ID.String())
 	if err != nil {
 		return fmt.Errorf("error getting steamID: %w", err)
@@ -58,16 +57,30 @@ func dGetPremierRatingHandler(author *discord.User, message *discord.Message, ar
 
 // updates premier rating role when run
 func updatePremierRatingRole(playerstats LeetifyProfile) error {
-	premierRating, err := playerstats.Ranks.Premier.Int64()
+	var premierRating int64
+
+	// returns nil if no leetify account
+	if playerstats.SteamID == "" {
+		return nil
+	}
+
+	// check for unrated players
+	if playerstats.Ranks.Premier == "" {
+		premierRating = 0
+	} else {
+		premierRating, err = playerstats.Ranks.Premier.Int64()
+	}
 	if err != nil {
 		return fmt.Errorf("error getting premier rating: %w", err)
 	}
 
 	roleID := getRoleIDForRating(premierRating)
 	fluxerID, err := getFluxerIDFromSteamID(playerstats.SteamID)
-
 	if err != nil {
 		return fmt.Errorf("error getting fluxerID: %w", err)
+	}
+	if fluxerID == "" {
+		return nil
 	}
 
 	userID := snowflake.MustParse(fluxerID)
@@ -78,44 +91,65 @@ func updatePremierRatingRole(playerstats LeetifyProfile) error {
 		return err
 	}
 
+	// check if user already has the role
+	hasCorrectRole := false
 	for _, ownedRoleID := range member.RoleIDs {
 		if ownedRoleID == roleID {
-			return nil
+			hasCorrectRole = true
+			break
 		}
 	}
 
+	// check all user roles and remove any that the user should not have
 	for _, r := range member.RoleIDs {
 		for _, rating := range ratings {
-			ratingRole := snowflake.MustParse(rating.Role)
-			if r == ratingRole {
+			if r.String() == rating.Role && rating.Role != roleID.String() {
+				ratingRole := snowflake.MustParse(rating.Role)
 				err := removePremierRatingRole(guildID, userID, ratingRole)
 				if err != nil {
-					fmt.Println("Failed removing role:", err)
+					fmt.Println("failed removing role:", err)
 				}
 				time.Sleep(250 * time.Millisecond)
 			}
 		}
 	}
 
-	err = setPremierRatingRole(guildID, userID, roleID)
-
-	if err != nil {
-		return err
+	// set the correct premier rating role
+	if !hasCorrectRole {
+		err = setPremierRatingRole(guildID, userID, roleID)
+		if err != nil {
+			return err
+		}
 	}
+
 	return nil
 }
 
 func dUpdatePremierRatingRole(playerstats LeetifyProfile) error {
-	premierRating, err := playerstats.Ranks.Premier.Int64()
+	var premierRating int64
+
+	// returns nil if no leetify account
+	if playerstats.SteamID == "" {
+		return nil
+	}
+
+	// check for unrated players
+	if playerstats.Ranks.Premier == "" {
+		premierRating = 0
+	} else {
+		premierRating, err = playerstats.Ranks.Premier.Int64()
+	}
 	if err != nil {
 		return fmt.Errorf("error getting premier rating: %w", err)
 	}
 
 	roleID := dGetRoleIDForRating(premierRating)
 	discordID, err := getDiscordIDFromSteamID(playerstats.SteamID)
-
 	if err != nil {
 		return fmt.Errorf("error getting discordID: %w", err)
+	}
+	if discordID == "" {
+		return nil
 	}
 
 	userID := snowflake.MustParse(discordID)
@@ -126,30 +160,37 @@ func dUpdatePremierRatingRole(playerstats LeetifyProfile) error {
 		return err
 	}
 
+	// check if user already has the role
+	hasCorrectRole := false
 	for _, ownedRoleID := range member.RoleIDs {
 		if ownedRoleID == roleID {
-			return nil
+			hasCorrectRole = true
+			break
 		}
 	}
 
+	// check all user roles and remove any that the user should not have
 	for _, r := range member.RoleIDs {
-		for _, rating := range ratings {
-			ratingRole := snowflake.MustParse(rating.Role)
-			if r == ratingRole {
+		for _, rating := range dRatings {
+			if r.String() == rating.Role && rating.Role != roleID.String() {
+				ratingRole := snowflake.MustParse(rating.Role)
 				err := dRemovePremierRatingRole(guildID, userID, ratingRole)
 				if err != nil {
-					fmt.Println("Failed removing role:", err)
+					fmt.Println("failed removing role:", err)
 				}
 				time.Sleep(250 * time.Millisecond)
 			}
 		}
 	}
 
-	err = dSetPremierRatingRole(guildID, userID, roleID)
-
-	if err != nil {
-		return err
+	// set the correct premier rating role
+	if !hasCorrectRole {
+		err = dSetPremierRatingRole(guildID, userID, roleID)
+		if err != nil {
+			return err
+		}
 	}
+
 	return nil
 }
 
