@@ -18,7 +18,7 @@ var dLogChannelID snowflake.ID
 
 func init() {
 	logChannelID = snowflake.MustParse(os.Getenv("LOG_CHANNEL_ID"))
-	dLogChannelID = snowflake.MustParse(os.Getenv("LOG_CHANNEL_ID"))
+	dLogChannelID = snowflake.MustParse(os.Getenv("DLOG_CHANNEL_ID"))
 }
 
 func check(e error) {

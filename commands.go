@@ -44,12 +44,11 @@ var Commands = []Command{
 	},
 	{
 		Name:    "stats",
-		Handler: getStatsHandler, //get basic stats, return to user
+		Handler: getStatsHandler, // get basic stats, return to user
 	},
 }
 
 func getallroleshandler(caller *fluxer.User, message *fluxer.Message, args []string) error {
-
 	roles, _ := fClient.Rest.GetRoles(*message.GuildID)
 	for _, role := range roles {
 		fmt.Printf("Role: %s, ID: %s\n", role.Name, role.ID)
@@ -91,32 +90,21 @@ func findCommmand(name string) *Command {
 func commands(event *events.MessageCreate) {
 
 	message := &event.Message
-
 	if message.Author.ID == fClient.ID() {
 		return
 	}
 
-	// !getRating 23409823490832
 	content := message.Content
-
 	match := prefixPattern.FindString(content)
 
 	if match != "" {
-		// !
 		args := strings.Fields(content[len(match):])
-		// [getRating, 23409823490832]
 		if len(args) == 0 {
 			return
 		}
 
 		commandName := strings.ToLower(args[0])
-		// getRating
-
 		command := findCommmand(commandName)
-		// 	{
-		// 	Name:    "getRating",
-		// 	Handler: getRatingHandler, //get rating, return to user
-		//  },
 
 		if command == nil {
 

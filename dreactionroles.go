@@ -27,9 +27,9 @@ func init() {
 }
 
 func dInitReactionRoles() {
+	// need to stop removing all and then readding. (just check and then remove/add)
 	dClient.Rest.RemoveAllReactions(dRoleChannel, dReactionMsgID)
 	dAddRoleMsgReactions(dRoleChannel, dReactionMsgID)
-
 }
 
 func dAddRoleMsgReactions(channelID snowflake.ID, messageID snowflake.ID) {
@@ -43,7 +43,6 @@ func dAddRoleMsgReactions(channelID snowflake.ID, messageID snowflake.ID) {
 			return
 		}
 	}
-
 }
 
 // adds an emoji given channel, message, and emoji ids

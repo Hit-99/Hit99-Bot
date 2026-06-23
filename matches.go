@@ -11,7 +11,6 @@ var matchChannelID snowflake.ID
 var dMatchChannelID snowflake.ID
 
 // checks for new matches from a steam user list and sends them in the specified channel
-
 func csMatchListener(playerstats LeetifyProfile) {
 	matchChannelID = snowflake.MustParse("1475607334483988934")
 	dMatchChannelID = snowflake.MustParse("1499780625966829598")

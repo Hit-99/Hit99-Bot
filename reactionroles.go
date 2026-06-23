@@ -32,14 +32,12 @@ var RoleReactionIDs = map[string]string{
 func init() {
 	roleChannel = snowflake.MustParse("1474153527752311133")
 	reactionMsgID = snowflake.MustParse("1474417595292490005")
-
 }
 
 func initReactionRoles() {
-
+	// need to stop removing all and then readding. (just check and then remove/add)
 	fClient.Rest.RemoveAllReactions(roleChannel, reactionMsgID)
 	addRoleMsgReactions(roleChannel, reactionMsgID)
-
 }
 
 // doesnt work yet
@@ -54,7 +52,6 @@ func addRoleMsgReactions(channelID snowflake.ID, messageID snowflake.ID) {
 			return
 		}
 	}
-
 }
 
 func addReactionToMessage(channelID snowflake.ID, messageID snowflake.ID, emojiName string) error {

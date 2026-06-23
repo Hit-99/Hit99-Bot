@@ -1,6 +1,5 @@
-*.env
-go.sum
+.env
 *.exe
-*db
+*.db
 hit99.db-journal
 /logs

@@ -20,5 +20,3 @@ func dAutorole(event *devents.GuildMemberJoin) {
 	memberRoleID := snowflake.MustParse("712775854878359563")
 	err = dClient.Rest.AddMemberRole(event.GuildID, event.Member.User.ID, memberRoleID)
 }
-
-// give member role if user doesnt have it
