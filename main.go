@@ -49,7 +49,7 @@ func fOnReady(event *events.Ready) {
 	fmt.Println("initialized fluxer commands")
 	initReactionRoles()
 	fmt.Println("initialized fluxer reaction roles")
-	go initLeetifyStatsLoop()
+	go initCSMStatsLoop()
 	fmt.Println("initialized looped functions")
 
 }

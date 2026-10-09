@@ -11,12 +11,12 @@ var matchChannelID snowflake.ID
 var dMatchChannelID snowflake.ID
 
 // checks for new matches from a steam user list and sends them in the specified channel
-func csMatchListener(playerstats LeetifyProfile) {
+func csMatchListener(playerstats CSMetricsProfile) {
 	matchChannelID = snowflake.MustParse("1475607334483988934")
 	dMatchChannelID = snowflake.MustParse("1499780625966829598")
-	for _, match := range playerstats.RecentMatches {
-		matchID := match.ID
-		recentMatch := playerstats.RecentMatches[0].ID
+	for _, match := range playerstats.Matches {
+		matchID := match.MatchUUID
+		recentMatch := playerstats.Matches[0].MatchUUID
 		steamID = playerstats.SteamID
 
 		time.Sleep(1 * time.Second)

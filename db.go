@@ -140,6 +140,12 @@ func linkGetEntries() []FluxerSteamPair {
 		fmt.Printf("fluxerID=%s steamID=%s\n", fluxerID, steamID)
 
 	}
+
+	if err := rows.Err(); err != nil {
+		log.Printf("Error iterating database rows: %v", err)
+		return nil
+	}
+
 	return entries
 }
 
@@ -167,6 +173,12 @@ func dLinkGetEntries() []DiscordSteamPair {
 		fmt.Printf("discordID=%s steamID=%s\n", discordID, steamID)
 
 	}
+
+	if err := rows.Err(); err != nil {
+		log.Printf("Error iterating database rows: %v", err)
+		return nil
+	}
+
 	return entries
 }
 
@@ -189,6 +201,12 @@ func linkGetAllSteamIds() []string {
 
 		entries = append(entries, steamID) // append to the array
 	}
+
+	if err := rows.Err(); err != nil {
+		log.Printf("Error iterating database rows: %v", err)
+		return nil
+	}
+
 	return entries
 }
 
@@ -211,6 +229,12 @@ func dLinkGetAllSteamIds() []string {
 
 		entries = append(entries, steamID) // append to the array
 	}
+
+	if err := rows.Err(); err != nil {
+		log.Printf("Error iterating database rows: %v", err)
+		return nil
+	}
+
 	return entries
 }
 

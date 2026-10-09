@@ -57,8 +57,8 @@ func linkSteamHandler(author *fluxer.User, message *fluxer.Message, args []strin
 		if err != nil {
 			return fmt.Errorf("error sending message: %w", err)
 		}
-		userStats, err := getLeetifyStats(msgSteamID)
-		premierRating, _ := userStats.Ranks.Premier.Int64()
+		userStats, err := getCSMStats(msgSteamID)
+		premierRating, _ := userStats.Ranks.Premier.Current.Int64()
 		roleID := getRoleIDForRating(premierRating)
 		setPremierRatingRole(*message.GuildID, msgFluxerID, roleID)
 		return err
@@ -116,8 +116,8 @@ func dLinkSteamHandler(author *discord.User, message *discord.Message, args []st
 		if err != nil {
 			return fmt.Errorf("error sending message: %w", err)
 		}
-		userStats, err := getLeetifyStats(msgSteamID)
-		premierRating, _ := userStats.Ranks.Premier.Int64()
+		userStats, err := getCSMStats(msgSteamID)
+		premierRating, _ := userStats.Ranks.Premier.Current.Int64()
 		roleID := getRoleIDForRating(premierRating)
 		setPremierRatingRole(*message.GuildID, msgDiscordID, roleID)
 		return err

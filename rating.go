@@ -42,7 +42,7 @@ func getPremierRatingHandler(author *fluxer.User, message *fluxer.Message, args 
 		return fmt.Errorf("error getting steamID: %w", err)
 	}
 
-	profile, err := getLeetifyStats(steamID)
+	profile, err := getCSMStats(steamID)
 	if err != nil {
 		return fmt.Errorf("error getting rating: %w", err)
 	}
@@ -63,7 +63,7 @@ func dGetPremierRatingHandler(author *discord.User, message *discord.Message, ar
 		return fmt.Errorf("error getting steamID: %w", err)
 	}
 
-	profile, err := getLeetifyStats(steamID)
+	profile, err := getCSMStats(steamID)
 	if err != nil {
 		return fmt.Errorf("error getting rating: %w", err)
 	}
@@ -77,20 +77,20 @@ func dGetPremierRatingHandler(author *discord.User, message *discord.Message, ar
 	return nil
 }
 
-// update users premier rating role based on current leetify stats (fluxer)
-func updatePremierRatingRole(playerstats LeetifyProfile) error {
+// update users premier rating role based on current csmetrics stats (fluxer)
+func updatePremierRatingRole(playerstats CSMetricsProfile) error {
 	var premierRating int64
 
-	// returns nil if no leetify account
+	// returns nil if no csmetrics account
 	if playerstats.SteamID == "" {
 		return nil
 	}
 
 	// check for unrated players
-	if playerstats.Ranks.Premier == "" {
+	if playerstats.Ranks.Premier.Current == "" {
 		premierRating = 0
 	} else {
-		premierRating, err = playerstats.Ranks.Premier.Int64()
+		premierRating, err = playerstats.Ranks.Premier.Current.Int64()
 	}
 	if err != nil {
 		return fmt.Errorf("error getting premier rating: %w", err)
@@ -147,20 +147,20 @@ func updatePremierRatingRole(playerstats LeetifyProfile) error {
 	return nil
 }
 
-// update users premier rating role based on current leetify stats (discord)
-func dUpdatePremierRatingRole(playerstats LeetifyProfile) error {
+// update users premier rating role based on current csmetrics stats (discord)
+func dUpdatePremierRatingRole(playerstats CSMetricsProfile) error {
 	var premierRating int64
 
-	// returns nil if no leetify account
+	// returns nil if no csmetrics account
 	if playerstats.SteamID == "" {
 		return nil
 	}
 
 	// check for unrated players
-	if playerstats.Ranks.Premier == "" {
+	if playerstats.Ranks.Premier.Current == "" {
 		premierRating = 0
 	} else {
-		premierRating, err = playerstats.Ranks.Premier.Int64()
+		premierRating, err = playerstats.Ranks.Premier.Current.Int64()
 	}
 	if err != nil {
 		return fmt.Errorf("error getting premier rating: %w", err)

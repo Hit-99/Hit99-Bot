@@ -10,7 +10,7 @@ import (
 // leetify stats auto messaging and commands handler
 
 func getStatsHandler(author *fluxer.User, message *fluxer.Message, args []string) error {
-	profile, err := getLeetifyStats(args[1])
+	profile, err := getCSMStats(args[1])
 
 	if err != nil {
 		return fmt.Errorf("error getting stats: %w", err)
@@ -23,7 +23,7 @@ func getStatsHandler(author *fluxer.User, message *fluxer.Message, args []string
 }
 
 func dGetStatsHandler(author *discord.User, message *discord.Message, args []string) error {
-	profile, err := getLeetifyStats(args[1])
+	profile, err := getCSMStats(args[1])
 
 	if err != nil {
 		return fmt.Errorf("error getting stats: %w", err)
