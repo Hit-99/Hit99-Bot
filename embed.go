@@ -181,7 +181,7 @@ func matchStatsEmbed(channelID snowflake.ID, matchStats CSMetricsProfile, matchI
 		},
 		Footer: &fluxer.EmbedFooter{
 			Text:    matchStats.Matches[recentMatch].MatchUUID,
-			IconURL: "https://fluxerusercontent.com/attachments/1473793058206990390/1475614229764805051/Artboard_1.png",
+			IconURL: "https://csmetrics.app/assets/favicons/csmetrics-v3.png",
 		},
 	}
 	embedOut := fluxer.NewMessageCreate().WithContent("").WithEmbeds(embed)
@@ -303,7 +303,7 @@ func dMatchStatsEmbed(channelID snowflake.ID, matchStats CSMetricsProfile, match
 		},
 		Footer: &discord.EmbedFooter{
 			Text:    matchStats.Matches[recentMatch].MatchUUID,
-			IconURL: "https://fluxerusercontent.com/attachments/1473793058206990390/1475614229764805051/Artboard_1.png",
+			IconURL: "https://csmetrics.app/assets/favicons/csmetrics-v3.png",
 		},
 	}
 	embedOut := discord.NewMessageCreate().WithContent("").WithEmbeds(embed)
